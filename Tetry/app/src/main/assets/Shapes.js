@@ -1,5 +1,5 @@
 var numShapes = 7;
-var rand = 5;
+var rand = 1;
 
 function nextShapeDisplay(){
     switch(rand){

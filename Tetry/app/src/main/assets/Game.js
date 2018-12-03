@@ -50,7 +50,6 @@ var ghostCurrentY = yGridAmount - 1;
 
 function startGame(){
     initialiseGame();
-    gameLoop();
 }
 
 function initialiseGame() {
@@ -85,6 +84,7 @@ function initialiseGame() {
 
         createNewShape();
     }
+    gameLoop();
 }
 
 function getGridWidth(){
@@ -197,8 +197,8 @@ function ghost(){
 
 
 function renderGame() {
+    canvasContext.clearRect(0,0,canvas.width, canvas.height);
     backgroundImage.render(canvas.width, canvas.height);
-
     for (var i = 0; i < shape.length; i++) {
         ghostShape[i].render(getGridWidth(), getGridHeight());
         shape[i].render(getGridWidth(), getGridHeight());

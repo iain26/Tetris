@@ -1,5 +1,5 @@
 var replay = true;
-var background;
+var replayBackground;
 var replayButton;
 
 function startReplay(){
@@ -9,12 +9,12 @@ function startReplay(){
 
 function initialiseReplay(){
     replay = true;
-    background = new image(0, 0, "Menu.png", 0, 0);
+    replayBackground = new image(0, 0, "Menu.png", 0, 0);
     replayButton = new image(canvas.width/ 2 - (getGridWidth() * 1.5), canvas.height*0.62, "ReplayButton.png", 0, 0);
 }
 
 function replayLoop(){
-    renderReplay();
+    // renderReplay();
     if(replay == true){
         requestAnimationFrame(replayLoop);
     }
@@ -22,7 +22,9 @@ function replayLoop(){
 
 function renderReplay(){
     background.render(canvas.width, canvas.height);
-    replayButton.render(getGridWidth() * 3, getGridHeight() * 2);
+    replayBackground.render(getGridWidth() * 3, getGridHeight() * 2);
+    canvasContext.clearRect(0,0,canvas.width, canvas.height);
+    canvasContext.strokeRect(1,1, canvas.width - 2, canvas.height -2);
 }
 
 function replayButtonCheck(press){

@@ -15,7 +15,6 @@ function load() {
     canvas = document.getElementById('gameCanvas');
     canvasContext = canvas.getContext('2d');
     gameSetup();
-    sceneMgr();
 }
 
 function image(newX, newY, iSRC, velocityX, velocityY) {
@@ -47,7 +46,9 @@ function gameSetup() {
         document.body.addEventListener("touchcancel", touchUp, false);
 
         resizeCanvas();
+
     }
+    sceneMgr();
 }
 
 function print(message) {

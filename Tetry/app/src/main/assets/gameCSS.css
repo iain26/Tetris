@@ -10,7 +10,7 @@ canvas {
 position: absolute;
 width: 100%;
 height: 100%;
-background: #eee;
+background: rgb(54, 19, 247);
 display: block;
 margin: 0 auto;
 }
