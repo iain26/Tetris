@@ -1,18 +1,9 @@
-var canvas;
-var canvasContext;
-
-var gameOver = false;
-
-var backgroundImage;
-var headerImage;
-
 var xGridAmount = 10;
-var yGridAmount = 24;
+var yGridAmount = 26;
 
 var spawnPos = 0;
 
-var lastPt = null;
-var gameOverScreen = false;
+var playing = true;
 
 //time in seconds between updates
 var timeStep = 0.3;
@@ -21,9 +12,10 @@ var previousTime = 0;
 var time = 0;
 var incrementing = false;
 
-var gridCellWidth;
-var gridCellHeight;
-var gridCentreX;
+var hardPlacement = false;
+
+var level = 1;
+var score = 0;
 
 var gridCellX = [];
 var gridCellY = [];
@@ -32,81 +24,49 @@ var gridCellOccupied = [];
 var shape = [];
 var ghostShape = [];
 
+var nextShape;
+
 var BlockShapePosX = [];
 var BlockShapePosY = [];
+
+var lowestX = 0;
+var highestX = 0;
+var lowestY = 0;
+var highestY = 0;
+
 var BlockGridPosX = [];
 var BlockGridPosY = [];
 
 var surfaceBlock = [];
 
+var lineCounter = 0;
+
 var currentX = 0;
 var currentY = 0;
 
-var hardPlacement = false;
+var currentChangeX = 0;
 
-var currentTime = Date.now()/1000;
+var ghostCurrentY = yGridAmount - 1;
 
-function load() {
-    canvas = document.getElementById('gameCanvas');
-    canvasContext = canvas.getContext('2d');
-    init();
+function startGame(){
+    initialiseGame();
     gameLoop();
 }
 
-// function aSprite(x, y, imageSRC, velx, vely) {
-//     this.zindex = 0;
-//     this.x = x;
-//     this.y = y;
-//     this.vx = velx;
-//     this.vy = vely;
-//     this.sImage = new Image();
-//     this.sImage.src = imageSRC;
-// }
-
-aSprite.prototype.render = function (width, height) {
-    canvasContext.drawImage(this.sImage, this.x, this.y, width, height);
-}
-
-block.prototype.render = function (width, height) {
-    canvasContext.drawImage(this.sImage, this.x, this.y, width, height);
-}
-
-function init() {
+function initialiseGame() {
     if (canvas.getContext)
     {
-        //Set Event Listeners for window, mouse and touch
-
-        window.addEventListener('resize', resizeCanvas, false);
-        window.addEventListener('orientationchange', resizeCanvas, false);
-
-        canvas.addEventListener("touchstart", touchDown, false);
-        canvas.addEventListener("touchmove", touchXY, true);
-        canvas.addEventListener("touchend", touchUp, false);
-
-        document.body.addEventListener("touchcancel", touchUp, false);
-
-        resizeCanvas();
-
         originalTimeStep = timeStep;
 
         spawnPos = Math.round(xGridAmount/2) - 1;
         currentX = spawnPos;
 
-        //hard coded values change
-        // gridCellWidth = 920 / xGridAmount;
-        // var gridCellWidth = canvas.width / xGridAmount;
-        gridCentreX = getGridWidth() / 2;
-
-        // gridCellHeight = 1650 / yGridAmount;
-        // gridCellHeight = canvas.height / yGridAmount;
         var gridYCentre = getGridHeight() / 2;
 
         for (var x = 0; x < xGridAmount; x++) {
-            // gridCellX.push((gridCentreX + (getGridWidth() * x)));
             gridCellX.push(((getGridWidth() * x)));
         }
         for (var y = 0; y < yGridAmount; y++) {
-            // gridCellY.push((gridYCentre + (getGridHeight() * y)));
             gridCellY.push(((getGridHeight() * y)));
         }
 
@@ -120,8 +80,8 @@ function init() {
             }
         }
 
-        backgroundImage = new aSprite(0, 0, "grey-background.jpg", 0, 0);
-        headerImage = new aSprite(0, 0, "Header.png", 0, 0);
+        backgroundImage = new image(0, 0, "grey-background.jpg", 0, 0);
+        headerImage = new image(0, 0, "Header.png", 0, 0);
 
         createNewShape();
     }
@@ -135,7 +95,7 @@ function getGridHeight(){
     return canvas.height/yGridAmount;
 }
 
-function timer() {
+function timeStepUpdate() {
     if (incrementing == false) {
         incrementing = true;
         setTimeout(function () {
@@ -145,35 +105,58 @@ function timer() {
     }
 }
 
-function print(message) {
-    console.log(message);
-}
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-
 function gameLoop() {
-    if (gameOver == false) {
-        timer();
-        update();
-        placementCheck();
-        collisionDetection();
-        checkLine();
-        render();
+    timeStepUpdate();
+    placementCheck();
+    update();
+    ghost();
+    checkLine();
+    renderGame();
+    if(playing == true){
         requestAnimationFrame(gameLoop);
+    }
+    else{
+        reset();
+        stopGame();
     }
 }
 
+function reset(){
+    xGridAmount = 10;
+    yGridAmount = 26;
+    spawnPos = 0;
+    playing = true;
+    timeStep = 0.3;
+    originalTimeStep;
+    previousTime = 0;
+    time = 0;
+    incrementing = false;
+    hardPlacement = false;
+    level = 1;
+    score = 0;
+    gridCellX.length = 0;
+    gridCellY.length = 0;
+    gridCellOccupied.length = 0;
+    shape.length = 0;
+    ghostShape.length = 0;
+    nextShape = null;
+    BlockShapePosX.length = 0;
+    BlockShapePosY.length = 0;
+    lowestX = 0;
+    highestX = 0;
+    lowestY = 0;
+    highestY = 0;
+    BlockGridPosX.length = 0;
+    BlockGridPosY.length = 0;
+    surfaceBlock.length = 0;
+    lineCounter = 0;
+    currentX = 0;
+    currentY = 0;
+    currentChangeX = 0;
+    ghostCurrentY = yGridAmount - 1;
+}
 
-var lowestX = 0;
-var highestX = 0;
-
-var lowestY = 0;
-var highestY = 0;
-
-function collisionDetection(){
+function ghost(){
     var surfaceX = [];
     var surfaceY = [];
     for (var x = (lowestX + currentX); x <= (highestX + currentX); x++) {
@@ -205,14 +188,99 @@ function collisionDetection(){
             var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
             if(ghostX == surfaceX[s] && surfaceY[s] == ghostY){
                 ghostCurrentY--;
-                s = 0;
+                i = -1;
+                s = -1;
             }
         }
     }
 }
 
-var ghostCurrentY = yGridAmount - 1;
-var lowestY;
+
+function renderGame() {
+    backgroundImage.render(canvas.width, canvas.height);
+
+    for (var i = 0; i < shape.length; i++) {
+        ghostShape[i].render(getGridWidth(), getGridHeight());
+        shape[i].render(getGridWidth(), getGridHeight());
+    }
+
+    for (var x = 0; x < xGridAmount; x++) {
+        for (var y = 0; y < yGridAmount; y++) {
+            if (surfaceBlock[x][y] != null) {
+                surfaceBlock[x][y].render(getGridWidth(), getGridHeight());
+            }
+        }
+    }
+    nextShape.x = canvas.width * 0.65;
+    nextShape.y = getGridHeight()/6;
+    headerImage.render(canvas.width, getGridHeight() * 2);
+    nextShape.render(canvas.width/3, getGridHeight()*1.65);
+    styleText('white', '60px Courier New', 'left', 'middle');
+    canvasContext.fillText("Score: " + score, canvas.width * 0.05, getGridHeight()*0.5);
+    canvasContext.fillText("Level: " + level, canvas.width * 0.05, getGridHeight()*1.5);
+}
+
+function placementCheck() {
+    // check that shape has reached ground or the space below is occupied
+    var placed = false;
+    for (var i = 0; i < shape.length; i++) {
+        if (BlockGridPosY[i] == yGridAmount - 1 || gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i] + 1] == true) {
+            placed = true;
+            if (BlockGridPosY[i] <= 2) {
+                print("Game Over");
+                playing = false;
+                return;
+            }
+        }
+    }
+    if (placed == true) {
+        placement();
+    }
+}
+
+function placement(){
+    for (var i = 0; i < shape.length; i++) {
+        surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] = new image(shape[i].x, shape[i].y, "GreenBlock.png", 0, 0);
+        gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true;
+    }
+    createNewShape();
+}
+
+function emptyShapeElements() {
+    shape.length = 0;
+    ghostShape.length = 0;
+    BlockShapePosX.length = 0;
+    BlockShapePosY.length = 0;
+    BlockGridPosX.length = 0;
+    BlockGridPosY.length = 0;
+    if(hardPlacement == true){
+        hardPlacement = false;
+        timeStep = originalTimeStep;
+    }
+}
+
+function createNewShape() {
+    currentY = -2;
+    currentX = spawnPos;
+    emptyShapeElements();
+    shape = CreateShape();
+    nextShape = nextShapeDisplay();
+    ghostShape = createGhostShape();
+    sortShapePos(shape);
+}
+
+function sortShapePos(newShape) {
+    for (var i = 0; i < newShape.length; i++) {
+        BlockShapePosX.push(newShape[i].x);
+        BlockShapePosY.push(newShape[i].y);
+
+        BlockGridPosX.push(BlockShapePosX[i] + currentX);
+        BlockGridPosY.push(BlockShapePosY[i] + currentY);
+
+        newShape[i].x = gridCellX[BlockGridPosX[i]];
+        newShape[i].y = gridCellY[BlockGridPosY[i]];
+    }
+}
 
 function update() {
     if (time != previousTime) {
@@ -240,100 +308,8 @@ function update() {
     highestY = Math.min(...BlockShapePosY);
 }
 
-function render() {
-    backgroundImage.render(canvas.width, canvas.height);
-
-    for (var i = 0; i < shape.length; i++) {
-        ghostShape[i].render(getGridWidth(), getGridHeight());
-        shape[i].render(getGridWidth(), getGridHeight());
-    }
-
-    for (var x = 0; x < xGridAmount; x++) {
-        for (var y = 0; y < yGridAmount; y++) {
-            if (surfaceBlock[x][y] != null) {
-                surfaceBlock[x][y].render(getGridWidth(), getGridHeight());
-            }
-        }
-    }
-    headerImage.render(canvas.width, getGridHeight());
-}
-
-var timeToPlace = null;
-var placed = false;
-
-function placementCheck() {
-    // check that shape has reached ground or the space below is occupied
-    for (var i = 0; i < shape.length; i++) {
-        if (BlockGridPosY[i] == yGridAmount - 1 || gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i] + 1] == true) {
-            placed = true;
-            if (BlockGridPosY[i] == 0) {
-                print("Game Over");
-                gameOver = true;
-                return;
-            }
-        }
-    }
-    if (placed) {
-        placementDelay();
-    }
-}
-
-function placementDelay(){
-    // timeStep = 100;
-    if(timeToPlace == null){
-        timeToPlace = Date.now()/1000;
-    }
-    var elapsed = (Date.now()/1000) - timeToPlace;
-    // if(elapsed > 0.5)
-    {
-        placed = false;
-        timeToPlace = null;
-
-        for (var i = 0; i < shape.length; i++) {
-            surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] = new aSprite(shape[i].x, shape[i].y, "GreenBlock.png", 0, 0);
-            gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true;
-        }
-        createNewShape();
-        // timeStep = originalTimeStep;
-    }
-}
-
-function emptyShapeElements() {
-    shape.length = 0;
-    ghostShape.length = 0;
-    BlockShapePosX.length = 0;
-    BlockShapePosY.length = 0;
-    BlockGridPosX.length = 0;
-    BlockGridPosY.length = 0;
-    if(hardPlacement == true){
-        hardPlacement = false;
-        timeStep = originalTimeStep;
-    }
-}
-
-function createNewShape() {
-    currentY = -2;
-    currentX = spawnPos;
-    emptyShapeElements();
-    shape = CreateShape();
-    ghostShape = createGhostShape();
-    sortShapePos(shape);
-}
-
-function sortShapePos(newShape) {
-    for (var i = 0; i < newShape.length; i++) {
-        BlockShapePosX.push(newShape[i].x);
-        BlockShapePosY.push(newShape[i].y);
-
-        BlockGridPosX.push(BlockShapePosX[i] + currentX);
-        BlockGridPosY.push(BlockShapePosY[i] + currentY);
-
-        newShape[i].x = gridCellX[BlockGridPosX[i]];
-        newShape[i].y = gridCellY[BlockGridPosY[i]];
-    }
-}
-
 function checkLine() {
+    var counter = 0;
     for (var y = yGridAmount - 1; y > 0; y--) {
         var rowCheck = [];
         for (var x = 0; x < xGridAmount; x++) {
@@ -343,6 +319,8 @@ function checkLine() {
         }
         if (rowCheck.length == xGridAmount) {
             lineDeletion(y);
+            lineCounter++;
+            LevelSystem();
         }
     }
 }
@@ -352,13 +330,18 @@ function lineDeletion(yStart) {
         for (var x = 0; x < xGridAmount; x++) {
             gridCellOccupied[x][yG] = gridCellOccupied[x][yG - 1];
             if (surfaceBlock[x][yG - 1] != null) {
-                surfaceBlock[x][yG] = new aSprite(gridCellX[x], gridCellY[yG], "GreenBlock.png", 0, 0);
+                surfaceBlock[x][yG] = new image(gridCellX[x], gridCellY[yG], "GreenBlock.png", 0, 0);
             }
             else {
                 surfaceBlock[x][yG] = null;
             }
         }
     }
+}
+
+function LevelSystem(){
+    level = Math.floor(lineCounter/ 5) + 1;
+    score += 100 * level;
 }
 
 function moveShape(scrollPoint) {
@@ -428,9 +411,6 @@ function moveShape(scrollPoint) {
         currentChangeX = 0;
     }
 }
-
-var currentChangeX = 0;
-var currentChangeY = 0;
 
 function isRotatable(x, y,tempCurrentX){
     var result = true;
@@ -537,70 +517,5 @@ function rotateShape(shapeToRotate, clockwise) {
         BlockShapePosY = checkY;
 
         currentX = tempCurrentX;
-    }
-}
-
-function styleText(txtColour, txtFont, txtAlign, txtBaseline) {
-    canvasContext.fillStyle = txtColour;
-    canvasContext.font = txtFont;
-    canvasContext.textAlign = txtAlign;
-    canvasContext.textBaseline = txtBaseline;
-}
-
-var timePressed;
-var firstPress = null;
-var previousTimeStep;
-
-function touchUp(evt) {
-    evt.preventDefault();
-    // Terminate touch path
-
-    var elapsed = Date.now() / 1000 - timePressed;
-    var swipeDown = lastPt.y - firstPress.y >= 200;
-
-    var clockwise;
-
-    if(lastPt.x > canvas.width/3){
-        clockwise = 1;
-    }
-    else{
-        clockwise = -1;
-    }
-
-    if(swipeDown == true && elapsed < 0.15){
-        hardPlacement = true;
-        timeStep *= 0.1;
-    }
-
-    if (elapsed < 0.15 && swipeDown == false) {
-        rotateShape(shape, clockwise);
-    }
-
-    lastPt = null;
-    firstPress = null;
-}
-
-function touchDown(evt) {
-    timePressed = Date.now() / 1000;
-    evt.preventDefault();
-    touchXY(evt);
-}
-
-function touchXY(evt) {
-    evt.preventDefault();
-    if (lastPt != null) {
-        var touchX = evt.touches[0].pageX - canvas.offsetLeft;
-        var touchY = evt.touches[0].pageY - canvas.offsetTop;
-    }
-    lastPt = { x: evt.touches[0].pageX, y: evt.touches[0].pageY };
-
-    if(firstPress == null){
-        firstPress = lastPt;
-    }
-
-    var elapsed = Date.now() / 1000 - timePressed;
-
-    if (elapsed > 0.15) {
-        moveShape(lastPt);
     }
 }
