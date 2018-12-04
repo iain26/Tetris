@@ -9,6 +9,7 @@ import android.webkit.WebView;
 public class MainActivity extends AppCompatActivity {
 
     WebView webView;
+    iSound iS;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,17 +23,18 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
                 | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                | View.SYSTEM_UI_FLAG_IMMERSIVE;
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         decorView.setSystemUiVisibility(uiOptions);
 
         setContentView(R.layout.activity_main);
+        iS = new iSound(getApplicationContext());
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         webView = (WebView)findViewById(R.id.webview1);
-
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl("file:///android_asset/Tetry.html");
 
+        webView.addJavascriptInterface(iS, "soundMgr");
     }
 }
 
