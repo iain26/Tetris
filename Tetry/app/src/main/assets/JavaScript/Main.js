@@ -4,7 +4,7 @@ var canvasContext;
 var backgroundImage;
 var headerImage;
 
-const gameStates = {MENU:'menu', GAME:'game', REPLAY:'replay'};
+const gameStates = {MENU:'menu', INSTRUCTION: 'instruction', GAME:'game', REPLAY:'replay'};
 
 var previousGameState;
 var gameState = gameStates.MENU;
@@ -72,6 +72,9 @@ function sceneMgr() {
         if(gameState == gameStates.MENU){
             startMenu();
         }
+        if(gameState == gameStates.INSTRUCTION){
+            startInstruction();
+        }
         if(gameState == gameStates.GAME){
             startGame();
         }
@@ -83,6 +86,10 @@ function sceneMgr() {
 }
 
 function playGame(){
+    gameState = gameStates.INSTRUCTION;
+}
+
+function skipInstructions(){
     gameState = gameStates.GAME;
 }
 
@@ -151,6 +158,13 @@ function touchXY(evt) {
         if(firstPress == null){
             firstPress = lastPt;
             playButtonCheck(firstPress);
+        }
+    }
+
+    if(gameState == gameStates.INSTRUCTION){
+        if(firstPress == null){
+            firstPress = lastPt;
+            skipButtonCheck(firstPress);
         }
     }
 
