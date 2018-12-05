@@ -283,27 +283,23 @@ function particleCollision(particle){
                 var d = distance(a, b);
                 if(d < getGridWidth()*2){
                     if(!(a.x >= b.x + getGridWidth() || a.x <= b.x)){
-                        if(!(a.y >= b.y + getGridHeight() || a.y <= b.y)){
-                            if(particle.vy > 0 && a.y >= b.y){
-                                changeSurfaceColor(x, y, particle.color);
-                                particle.vy *= -0.5;
-                            }
-                            else if(particle.vy < 0 && a.y <= b.y + getGridHeight()){
-                                changeSurfaceColor(x, y, particle.color);
-                                particle.vy *= -0.5;
-                            }
+                        if(particle.vy > 0 && a.y >= b.y){
+                            changeSurfaceColor(x, y, particle.color);
+                            particle.vy *= -0.5;
+                        }
+                        else if(particle.vy < 0 && a.y <= b.y + getGridHeight()){
+                            changeSurfaceColor(x, y, particle.color);
+                            particle.vy *= -0.5;
                         }
                     }
                     if(!(a.y > b.y + getGridHeight() || a.y < b.y)){
-                        if(!(a.x > b.x + getGridWidth() || a.x < b.x)){
-                            if(particle.vx > 0 && a.x >= b.x){
-                                changeSurfaceColor(x, y, particle.color);
-                                particle.vx *= -0.5;
-                            }
-                            else if(particle.vx < 0 && a.x <= b.x + getGridWidth()){
-                                changeSurfaceColor(x, y, particle.color);
-                                particle.vx *= -0.5;
-                            }
+                        if(particle.vx > 0 && a.x >= b.x){
+                            changeSurfaceColor(x, y, particle.color);
+                            particle.vx *= -0.5;
+                        }
+                        else if(particle.vx < 0 && a.x <= b.x + getGridWidth()){
+                            changeSurfaceColor(x, y, particle.color);
+                            particle.vx *= -0.5;
                         }
                     }
                 }
