@@ -48,6 +48,8 @@ var currentChangeX = 0;
 
 var ghostCurrentY = yGridAmount - 1;
 
+var particleG = 0.05;
+
 function startGame(){
     initialiseGame();
 }
@@ -226,6 +228,108 @@ function renderGame() {
     canvasContext.fillText("Level: " + level, canvas.width * 0.05, getGridHeight()*1.5);
 }
 
+function update() {
+    if (time != previousTime) {
+        currentY += time - previousTime;
+        previousTime = time;
+    }
+    var counter = 0;
+    lowestY = Math.max(...BlockShapePosY);
+    for (var i = 0; i < shape.length; i++) {
+        BlockGridPosX[i] = BlockShapePosX[i] + currentX;
+        BlockGridPosY[i] = BlockShapePosY[i] + currentY;
+
+        shape[i].x = gridCellX[BlockGridPosX[i]];
+        shape[i].y = gridCellY[BlockGridPosY[i]];
+
+        var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
+        ghostShape[i].x = gridCellX[BlockGridPosX[i]];
+        ghostShape[i].y = gridCellY[ghostY];
+    }
+    if(particles.length > 0)
+    {
+        for (var i = 0; i < particles.length; i++){
+            if(particles.length > 8 && i < particles.length - 8){
+                particles[i] = null;
+            }
+            if(particles[i]!=null){
+                particles[i].vy += particleG;
+                particleCollision(particles[i]);
+            }
+        }
+    }
+
+    lowestX = Math.min(...BlockShapePosX);
+    highestX = Math.max(...BlockShapePosX);
+
+    lowestY = Math.max(...BlockShapePosY);
+    highestY = Math.min(...BlockShapePosY);
+
+}
+
+function particleCollision(particle){
+    if(particle.y >= canvas.height*0.995){
+        if(particle.vy > 0)
+            particle.vy *= -0.5;
+    }
+    if(particle.x <= 0 + canvas.width*0.005 || particle.x >= canvas.width*0.995){
+        particle.vx *= -0.95; 
+    }
+    for (var x = 0; x < xGridAmount; x++) {
+        for (var y = yGridAmount; y > 0; y--) {
+            if(surfaceBlock[x][y] != null ){
+                var a = {x: particle.x, y: particle.y};
+                var b = {x: gridCellX[x], y: gridCellY[y]};
+                var d = distance(a, b);
+                if(d < getGridWidth()*2){
+                    if(!(a.x >= b.x + getGridWidth() || a.x <= b.x)){
+                        if(!(a.y >= b.y + getGridHeight() || a.y <= b.y)){
+                            if(particle.vy > 0 && a.y >= b.y){
+                                changeSurfaceColor(x, y, particle.color);
+                                particle.vy *= -0.5;
+                            }
+                            else if(particle.vy < 0 && a.y <= b.y + getGridHeight()){
+                                changeSurfaceColor(x, y, particle.color);
+                                particle.vy *= -0.5;
+                            }
+                        }
+                    }
+                    if(!(a.y > b.y + getGridHeight() || a.y < b.y)){
+                        if(!(a.x > b.x + getGridWidth() || a.x < b.x)){
+                            if(particle.vx > 0 && a.x >= b.x){
+                                changeSurfaceColor(x, y, particle.color);
+                                particle.vx *= -0.5;
+                            }
+                            else if(particle.vx < 0 && a.x <= b.x + getGridWidth()){
+                                changeSurfaceColor(x, y, particle.color);
+                                particle.vx *= -0.5;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function changeSurfaceColor(x, y, pColor){
+    switch(pColor){
+        case "rgba(255, 0, 0, 0.5)":
+            surfaceBlock[x][y] = new image(gridCellX[x], gridCellY[y], "RedBlock.jpg", 0, 0);
+            break;
+        case "rgba(0, 255, 0, 0.5)":
+            surfaceBlock[x][y] = new image(gridCellX[x], gridCellY[y], "GreenBlock.jpg", 0, 0);
+            break;
+        case "rgba(0, 0, 255, 0.5)":
+            surfaceBlock[x][y] = new image(gridCellX[x], gridCellY[y], "BlueBlock.jpg", 0, 0);
+            break;
+    }
+}
+
+function distance(a, b){
+    return Math.sqrt(Math.pow((a.x - b.x), 2) + Math.pow((a.y - b.y), 2));
+}
+
 function placementCheck() {
     // check that shape has reached ground or the space below is occupied
     var placed = false;
@@ -245,14 +349,15 @@ function placementCheck() {
 }
 
 function placement(){
-    particles.length = 0;
     for (var i = 0; i < shape.length; i++) {
         surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] = new image(shape[i].x, shape[i].y, "GreenBlock.jpg", 0, 0);
         gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true; 
-        createParticleArray(shape[i].x, shape[i].y, canvasContext);
     }
     if(soundMgr != null){
         soundMgr.playSound(0);
+    }
+    if(level > 1){
+        createParticleArray(canvas.width, 0, canvasContext);
     }
 
     createNewShape();
@@ -294,48 +399,6 @@ function sortShapePos(newShape) {
     }
 }
 
-function update() {
-    if (time != previousTime) {
-        currentY += time - previousTime;
-        previousTime = time;
-    }
-    var counter = 0;
-    lowestY = Math.max(...BlockShapePosY);
-    for (var i = 0; i < shape.length; i++) {
-        BlockGridPosX[i] = BlockShapePosX[i] + currentX;
-        BlockGridPosY[i] = BlockShapePosY[i] + currentY;
-
-        shape[i].x = gridCellX[BlockGridPosX[i]];
-        shape[i].y = gridCellY[BlockGridPosY[i]];
-
-        var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
-        ghostShape[i].x = gridCellX[BlockGridPosX[i]];
-        ghostShape[i].y = gridCellY[ghostY];
-    }
-    if(particles.length > 0)
-    {
-        for (var i = 0; i < particles.length; i++){
-            particles[i].vy += 0.05;
-            particleCollision(particles[i]);
-        }
-    }
-
-    lowestX = Math.min(...BlockShapePosX);
-    highestX = Math.max(...BlockShapePosX);
-
-    lowestY = Math.max(...BlockShapePosY);
-    highestY = Math.min(...BlockShapePosY);
-}
-
-function particleCollision(particle){
-    if(particle.y >= canvas.height*0.995){
-        particle.vy *= -0.5;
-    }
-    if(particle.x <= 0 + canvas.width*0.005 || particle.x >= canvas.width*0.995){
-        particle.vx *= -0.8; 
-    }
-}
-
 function checkLine() {
     for (var y = yGridAmount - 1; y > 0; y--) {
         var rowCheck = [];
@@ -363,9 +426,9 @@ function lineDeletion(yStart) {
             else {
                 surfaceBlock[x][yG] = null;
             }
-            // createParticleArray(gridCellX[x], gridCellY[yG], canvasContext);
         }
     }
+    // createParticleArray(canvas.width, 0, canvasContext);
 }
 
 function LevelSystem(){

@@ -1,10 +1,8 @@
-// Create an array for the particles
 var particles = [];
 
 function createParticleArray(xPos, yPos, theCanvasContext)
 {
-    // Adds 10 particles to the array with random positions
-    for(var i = 0; i < 2; i++)
+    for(var i = 0; i < 5; i++)
     {
         particles.push(new create(xPos, yPos));
     }
@@ -13,76 +11,57 @@ function createParticleArray(xPos, yPos, theCanvasContext)
 
 function create(startX, startY)
 {
-    // Point of touch
-    this.x = startX;
+    this.x = Math.random()*startX;
     this.y = startY;
 
-    // Add random velocity to each particle
-    // this.vx = Math.random()*5-2;
-    // this.vy = Math.random()*5-2;
     this.vx = Math.random()*10-5;
-    this.vy = -5;
+    this.vy = -Math.random()*7+2;
 
-    //Random colours
-    // var red = Math.random()*255>>0;
-    // var green = Math.random()*255>>0;
-    // var blue = Math.random()*255>>0;
+    var rand =  Math.floor(Math.random()*3);
     var red = 0;
     var green = 255;
     var blue = 0;
-    this.color = "rgba("+red+", "+green+", "+blue+", 1)";
+    switch(rand){
+        case 0:
+            red = 255;
+            green = 0;
+            blue = 0;
+            break;
+        case 1:
+            red = 0;
+            green = 255;
+            blue = 0;
+            break;
+        case 2:
+            red = 0;
+            green = 0;
+            blue = 255;
+            break;
+    }
+    this.color = "rgba("+red+", "+green+", "+blue+", 0.5)";
 
-    //Random size
-    this.radius = 10;
-
-    // fade value
-    this.fade = Math.random()*500;
-
-    // particle dead
-    this.dead = false;
+    this.radius = canvas.width*0.01;
 }
 
-// Render and move the particle
 function renderP(theCanvasContext)
 {
     var aCanvasContext = theCanvasContext;
-    // aCanvasContext.globalCompositeOperation = "source-over";
-    // Reduce the opacity of the BG paint
-    // aCanvasContext.fillStyle = "rgba(0, 0, 0, 0.3)";
-    // Blend the particle with the background
-    // aCanvasContext.globalCompositeOperation = "lighter";
-
-    // Render the particles
     for(var t = 0; t < particles.length; t++)
     {
         var p = particles[t];
+        if(p != null){
+            aCanvasContext.beginPath();
 
-        aCanvasContext.beginPath();
+            var gradient = aCanvasContext.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+            gradient.addColorStop(0, p.color);
+            var prev = aCanvasContext.fillStyle;
+            aCanvasContext.fillStyle = gradient;
+            aCanvasContext.arc(p.x, p.y, p.radius, Math.PI*2, false);
+            aCanvasContext.fill();
+            aCanvasContext.fillStyle = prev;
 
-        // Mix the colours
-        var gradient = aCanvasContext.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-        gradient.addColorStop(0, "green");
-        // gradient.addColorStop(0.4, "white");
-        // gradient.addColorStop(0.4, p.color);
-        // gradient.addColorStop(1, "black");
-
-        aCanvasContext.fillStyle = gradient;
-        aCanvasContext.arc(p.x, p.y, p.radius, Math.PI*2, false);
-        aCanvasContext.fill();
-
-        // Add velocity
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Decrease fade and if particle is dead remove it
-        p.fade -= 500;
-
-        if(p.fade < 0)
-        p.dead = true;
-    }
-
-    if(p.dead == true)
-    {
-        particles.splice(t,1);
+            p.x += p.vx;
+            p.y += p.vy;
+        }
     }
 }
