@@ -130,7 +130,6 @@ function reset(){
     spawnPos = 0;
     playing = true;
     timeStep = 0.3;
-    originalTimeStep;
     previousTime = 0;
     time = 0;
     incrementing = false;

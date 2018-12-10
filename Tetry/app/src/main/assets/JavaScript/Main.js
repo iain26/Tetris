@@ -1,9 +1,6 @@
 var canvas;
 var canvasContext;
 
-var backgroundImage;
-var headerImage;
-
 const gameStates = {MENU:'menu', INSTRUCTION: 'instruction', GAME:'game', REPLAY:'replay'};
 
 var previousGameState;
@@ -11,7 +8,7 @@ var gameState = gameStates.MENU;
 
 var soundMgr;
 
-var lastPt = null;
+var currentTouchPoint = null;
 
 function load() {
     canvas = document.getElementById('gameCanvas');
@@ -111,15 +108,13 @@ var point;
 
 function touchUp(evt) {
     evt.preventDefault();
-    // Terminate touch path
-
     if(gameState == gameStates.GAME){
         var elapsed = Date.now() / 1000 - timePressed;
-        var swipeDown = lastPt.y - firstPress.y >= 100;
+        var swipeDown = currentTouchPoint.y - firstPress.y >= 100;
 
         var clockwise;
 
-        if(lastPt.x > canvas.width/3){
+        if(currentTouchPoint.x > canvas.width/3){
             clockwise = 1;
         }
         else{
@@ -137,7 +132,7 @@ function touchUp(evt) {
     }
     firstPress = null;
     point = null;
-    lastPt = null;
+    currentTouchPoint = null;
 }
 
 function touchDown(evt) {
@@ -148,47 +143,47 @@ function touchDown(evt) {
 
 function touchXY(evt) {
     evt.preventDefault();
-    if (lastPt != null) {
+    if (currentTouchPoint != null) {
         var touchX = evt.touches[0].pageX - canvas.offsetLeft;
         var touchY = evt.touches[0].pageY - canvas.offsetTop;
     }
-    lastPt = { x: evt.touches[0].pageX, y: evt.touches[0].pageY };
+    currentTouchPoint = { x: evt.touches[0].pageX, y: evt.touches[0].pageY };
 
     if(gameState == gameStates.MENU){
         if(firstPress == null){
-            firstPress = lastPt;
+            firstPress = currentTouchPoint;
             playButtonCheck(firstPress);
         }
     }
 
     if(gameState == gameStates.INSTRUCTION){
         if(firstPress == null){
-            firstPress = lastPt;
+            firstPress = currentTouchPoint;
             skipButtonCheck(firstPress);
         }
     }
 
     if(gameState == gameStates.REPLAY){
         if(firstPress == null){
-            firstPress = lastPt;
+            firstPress = currentTouchPoint;
             replayButtonCheck(firstPress);
         }
     }
 
     if(gameState == gameStates.GAME){
         if(firstPress == null){
-            firstPress = lastPt;
-            point = lastPt;
+            firstPress = currentTouchPoint;
+            point = currentTouchPoint;
         }
 
         var elapsed = Date.now() / 1000 - timePressed;
 
         if (elapsed > 0.15) {
-            if(lastPt.y - point.y > 50 && Math.sign(lastPt.y - point.y) * (lastPt.y - point.y) > getGridWidth()){
-                // currentY++;
-                // point = lastPt;
-            }
-            moveShape(lastPt);
+            // if(currentTouchPoint.y - point.y > 50 && Math.sign(currentTouchPoint.y - point.y) * (currentTouchPoint.y - point.y) > getGridWidth()){
+            //     timeStep *= 0.1;
+            //     point = currentTouchPoint;
+            // }
+            moveShape(currentTouchPoint);
         }
     }
 }
