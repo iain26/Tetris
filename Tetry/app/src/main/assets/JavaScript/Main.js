@@ -16,12 +16,10 @@ function load() {
     gameSetup();
 }
 
-function image(newX, newY, iSRC, velocityX, velocityY) {
+function image(newX, newY, iSRC) {
     this.zindex = 0;
     this.x = newX;
     this.y = newY;
-    this.vx = velocityX;
-    this.vy = velocityY;
     this.sImage = new Image();
     this.sImage.src = "Images/" + iSRC;
 }
@@ -49,8 +47,11 @@ function gameSetup() {
         if(soundMgr != null){
             soundMgr.playMusic(0);
         }
+        sceneMgr();
     }
-    sceneMgr();
+    else{
+        print("No Canvas Context!!!");
+    }
 }
 
 function print(message) {
@@ -149,41 +150,36 @@ function touchXY(evt) {
     }
     currentTouchPoint = { x: evt.touches[0].pageX, y: evt.touches[0].pageY };
 
-    if(gameState == gameStates.MENU){
-        if(firstPress == null){
-            firstPress = currentTouchPoint;
-            playButtonCheck(firstPress);
-        }
-    }
+    switch(gameState){
+        case gameStates.MENU:
+            if(firstPress == null){
+                firstPress = currentTouchPoint;
+                playButtonCheck(firstPress);
+            }
+        break;
+        case gameStates.INSTRUCTION:
+            if(firstPress == null){
+                firstPress = currentTouchPoint;
+                skipButtonCheck(firstPress);
+            }
+        break;
+        case gameStates.REPLAY:
+            if(firstPress == null){
+                firstPress = currentTouchPoint;
+                replayButtonCheck(firstPress);
+            }
+        break;
+        case gameStates.GAME:
+            if(firstPress == null){
+                firstPress = currentTouchPoint;
+                point = currentTouchPoint;
+            }
 
-    if(gameState == gameStates.INSTRUCTION){
-        if(firstPress == null){
-            firstPress = currentTouchPoint;
-            skipButtonCheck(firstPress);
-        }
-    }
+            var elapsed = Date.now() / 1000 - timePressed;
 
-    if(gameState == gameStates.REPLAY){
-        if(firstPress == null){
-            firstPress = currentTouchPoint;
-            replayButtonCheck(firstPress);
-        }
-    }
-
-    if(gameState == gameStates.GAME){
-        if(firstPress == null){
-            firstPress = currentTouchPoint;
-            point = currentTouchPoint;
-        }
-
-        var elapsed = Date.now() / 1000 - timePressed;
-
-        if (elapsed > 0.15) {
-            // if(currentTouchPoint.y - point.y > 50 && Math.sign(currentTouchPoint.y - point.y) * (currentTouchPoint.y - point.y) > getGridWidth()){
-            //     timeStep *= 0.1;
-            //     point = currentTouchPoint;
-            // }
-            moveShape(currentTouchPoint);
-        }
+            if (elapsed >= 0.15) {
+                moveShape(currentTouchPoint);
+            }
+        break;
     }
 }

@@ -84,11 +84,14 @@ function initialiseGame() {
 
         backgroundImage = new image(0, 0, "grey-background.jpg", 0, 0);
         headerImage = new image(0, 0, "Header.png", 0, 0);
-        styleText('white', '30px Courier New', 'left', 'middle');
+        styleText('white', '60px Courier New', 'left', 'middle');
 
         createNewShape();
+        gameLoop();
     }
-    gameLoop();
+    else{
+        print("No Canvas Context!!!");
+    }
 }
 
 function getGridWidth(){
@@ -128,16 +131,23 @@ function reset(){
     xGridAmount = 10;
     yGridAmount = 26;
     spawnPos = 0;
+
     playing = true;
+
     timeStep = 0.3;
     previousTime = 0;
     time = 0;
     incrementing = false;
+
     hardPlacement = false;
+
     level = 1;
     score = 0;
+    lineCounter = 0;
+
     gridCellX.length = 0;
     gridCellY.length = 0;
+
     gridCellOccupied.length = 0;
     shape.length = 0;
     ghostShape.length = 0;
@@ -148,14 +158,16 @@ function reset(){
     highestX = 0;
     lowestY = 0;
     highestY = 0;
+
     BlockGridPosX.length = 0;
     BlockGridPosY.length = 0;
     surfaceBlock.length = 0;
-    lineCounter = 0;
+
     currentX = 0;
     currentY = 0;
     currentChangeX = 0;
     ghostCurrentY = yGridAmount - 1;
+    
     particles.length = 0;
 }
 
