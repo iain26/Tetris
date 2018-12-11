@@ -219,10 +219,13 @@ function renderGame() {
     {
         renderP(canvasContext);
     }
+
+    headerImage.render(canvas.width, getGridHeight() * 2);
+
     nextShape.x = canvas.width * 0.65;
     nextShape.y = getGridHeight()/6;
-    headerImage.render(canvas.width, getGridHeight() * 2);
-    nextShape.render(canvas.width/3, getGridHeight()*1.65);
+    nextShape.render(canvas.width*0.33, getGridHeight()*1.65);
+
     canvasContext.fillText("Score: " + score, canvas.width * 0.05, getGridHeight()*0.5);
     canvasContext.fillText("Level: " + level, canvas.width * 0.05, getGridHeight()*1.5);
 }
@@ -411,7 +414,6 @@ function checkLine() {
 }
 
 function lineDeletion(yStart) {
-    // timeStep = 10;
     for (var yG = yStart; yG > 0; yG--) {
         for (var x = 0; x < xGridAmount; x++) {
             gridCellOccupied[x][yG] = gridCellOccupied[x][yG - 1];
@@ -423,7 +425,6 @@ function lineDeletion(yStart) {
             }
         }
     }
-    // createParticleArray(canvas.width, 0, canvasContext);
 }
 
 function LevelSystem(){
