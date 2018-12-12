@@ -10,12 +10,14 @@ var soundMgr;
 
 var currentTouchPoint = null;
 
+// Run when window loads
 function load() {
     canvas = document.getElementById('gameCanvas');
     canvasContext = canvas.getContext('2d');
     gameSetup();
 }
 
+//image containing positions and image filepath
 function image(newX, newY, iSRC) {
     this.zindex = 0;
     this.x = newX;
@@ -24,6 +26,7 @@ function image(newX, newY, iSRC) {
     this.sImage.src = "Images/" + iSRC;
 }
 
+// draw to canvas context
 image.prototype.render = function (width, height) {
     canvasContext.drawImage(this.sImage, this.x, this.y, width, height);
 }
@@ -44,25 +47,26 @@ function gameSetup() {
 
         resizeCanvas();
 
+        // sound run from iSound.java
         if(soundMgr != null){
             soundMgr.playMusic(0);
         }
         sceneMgr();
     }
-    else{
-        print("No Canvas Context!!!");
-    }
 }
 
+// debugging lines
 function print(message) {
     console.log(message);
 }
 
+// set the canvas size to the window size
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
+// the scene to apply rules and render
 function sceneMgr() {
     if(gameState != previousGameState)
     {
@@ -83,11 +87,12 @@ function sceneMgr() {
     requestAnimationFrame(sceneMgr);
 }
 
-function playGame(){
+// functions called from outside this javascript - purpose to change scene
+function viewInstructions(){
     gameState = gameStates.INSTRUCTION;
 }
 
-function skipInstructions(){
+function playGame(){
     gameState = gameStates.GAME;
 }
 
@@ -95,6 +100,7 @@ function stopGame(){
     gameState = gameStates.REPLAY;
 }
 
+// formatting text
 function styleText(txtColour, txtFont, txtAlign, txtBaseline) {
     canvasContext.fillStyle = txtColour;
     canvasContext.font = txtFont;
@@ -102,6 +108,7 @@ function styleText(txtColour, txtFont, txtAlign, txtBaseline) {
     canvasContext.textBaseline = txtBaseline;
 }
 
+// input variables
 var timePressed;
 var firstPress = null;
 var previousTimeStep;
@@ -113,8 +120,8 @@ function touchUp(evt) {
         var elapsed = Date.now() / 1000 - timePressed;
         var swipeDown = currentTouchPoint.y - firstPress.y >= 100;
 
+        // what direction to rotate - decided by what side of screen pressed
         var clockwise;
-
         if(currentTouchPoint.x > canvas.width/3){
             clockwise = 1;
         }
@@ -122,13 +129,15 @@ function touchUp(evt) {
             clockwise = -1;
         }
 
+        // swipe down fast on screen then speed up falling shape
         if(swipeDown == true && elapsed < 0.15){
             hardPlacement = true;
             timeStep *= 0.1;
         }
 
+        // tapping the screen rotates the current shape
         if (elapsed < 0.15 && swipeDown == false) {
-            rotateShape(shape, clockwise);
+            rotateShape(clockwise);
         }
     }
     firstPress = null;
@@ -144,13 +153,10 @@ function touchDown(evt) {
 
 function touchXY(evt) {
     evt.preventDefault();
-    if (currentTouchPoint != null) {
-        var touchX = evt.touches[0].pageX - canvas.offsetLeft;
-        var touchY = evt.touches[0].pageY - canvas.offsetTop;
-    }
     currentTouchPoint = { x: evt.touches[0].pageX, y: evt.touches[0].pageY };
 
     switch(gameState){
+        // presses buttons in the menu scenes
         case gameStates.MENU:
             if(firstPress == null){
                 firstPress = currentTouchPoint;
@@ -175,8 +181,8 @@ function touchXY(evt) {
                 point = currentTouchPoint;
             }
 
+            // holding down longing means that game expects movement input
             var elapsed = Date.now() / 1000 - timePressed;
-
             if (elapsed >= 0.15) {
                 moveShape(currentTouchPoint);
             }

@@ -18,10 +18,8 @@ public class iSound {
 
     iSound(final Context context)
     {
-        //cache the app context
         ctx = context;
 
-        //create a sound pool
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             sounds = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()).build();
         }
@@ -29,11 +27,8 @@ public class iSound {
             sounds = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
         }
 
-        //load sounds into sound pool
          try {
-            //Load sound using the asset file descriptor
             AssetFileDescriptor afd = ctx.getAssets().openFd("GroundHit.mp3");
-            //store the id outputted by the sound pool in the sound effects array
             soundIDs[0] = sounds.load(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength(), 0);
             afd.close();
             afd =ctx.getAssets().openFd("ButtonClick.wav");
@@ -43,7 +38,6 @@ public class iSound {
         catch(Exception e) {
             e.printStackTrace();
         }
-
         musicIDs[0] = "Sounds/BackgroundMusic.wav";
         musicIDs[1] = "Sounds/EvilLaugh.wav";
 
@@ -53,22 +47,19 @@ public class iSound {
     @JavascriptInterface
     public void playSound(int id)
     {
-        //sound pool is used for short sound clips
         sounds.play(soundIDs[id], 1, 1, 0, 0, 1);
     }
 
     @JavascriptInterface
     public void playMusic(int id)
     {
-        //media player is used for longer music tracks
-        music.reset();//reset player as we are changing tracks
+        music.reset();
         try {
-            //load the file and prepare the media player
             AssetFileDescriptor afd = ctx.getAssets().openFd(musicIDs[id]);
             music.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
             afd.close();
             if(id == 0) {
-                music.setLooping(true); //we set our music track to loop
+                music.setLooping(true);
             }
             else{
                 music.setLooping(false);

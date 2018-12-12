@@ -1,67 +1,58 @@
 var particles = [];
 
-function createParticleArray(xPos, yPos, theCanvasContext)
+function createParticles(x, y)
 {
-    for(var i = 0; i < 5; i++)
+    // create particles and assign them to array
+    for(var i = 0; i < 3; i++)
     {
-        particles.push(new create(xPos, yPos));
+        particles.push(new particle(x, y));
     }
-    renderP(theCanvasContext);
 }
 
-function create(startX, startY)
+function particle(x, y)
 {
-    this.x = Math.random()*startX;
-    this.y = startY;
-
+    // sets random variables for position, velocity and color
+    this.x = Math.random()*x;
+    this.y = y;
     this.vx = Math.random()*10-5;
     this.vy = -Math.random()*7+2;
+    this.radius = canvas.width*0.01;
 
     var rand =  Math.floor(Math.random()*3);
     var red = 0;
-    var green = 255;
+    var green = 0;
     var blue = 0;
     switch(rand){
         case 0:
             red = 255;
-            green = 0;
-            blue = 0;
             break;
         case 1:
-            red = 0;
             green = 255;
-            blue = 0;
             break;
         case 2:
-            red = 0;
-            green = 0;
             blue = 255;
             break;
     }
     this.color = "rgba("+red+", "+green+", "+blue+", 0.5)";
-
-    this.radius = canvas.width*0.01;
 }
 
-function renderP(theCanvasContext)
+function renderParticles(canvasContext)
 {
-    var aCanvasContext = theCanvasContext;
-    for(var t = 0; t < particles.length; t++)
+    for(var i = 0; i < particles.length; i++)
     {
-        var p = particles[t];
-        if(p != null){
-            aCanvasContext.beginPath();
-
-            var gradient = aCanvasContext.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-            gradient.addColorStop(0, p.color);
-            var prev = aCanvasContext.fillStyle;
-            aCanvasContext.fillStyle = gradient;
-            aCanvasContext.arc(p.x, p.y, p.radius, Math.PI*2, false);
-            aCanvasContext.fill();
-            aCanvasContext.fillStyle = prev;
-
-            p.x += p.vx;
-            p.y += p.vy;
+        //render each partcle using arc function adn radial gradient
+        if(particles[i] != null){
+            canvasContext.beginPath();
+            var gradient = canvasContext.createRadialGradient(particles[i].x, particles[i].y, 0, particles[i].x, particles[i].y, particles[i].radius);
+            gradient.addColorStop(0, particles[i].color);
+            var prev = canvasContext.fillStyle;
+            canvasContext.fillStyle = gradient;
+            canvasContext.arc(particles[i].x, particles[i].y, particles[i].radius, Math.PI*2, false);
+            canvasContext.fill();
+            canvasContext.fillStyle = prev;
+            // apply the velocity vectors to position
+            particles[i].x += particles[i].vx;
+            particles[i].y += particles[i].vy;
         }
     }
 }

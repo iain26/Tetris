@@ -3,10 +3,12 @@ var background;
 var logo;
 var playButton;
 
+// first function run
 function startMenu(){
     initialiseMenu();
 }
 
+// sets the values and starts loop
 function initialiseMenu(){
     menu = true;
     background = new image(0, 0, "MenuBorder.jpg", 0, 0);
@@ -15,6 +17,7 @@ function initialiseMenu(){
     menuLoop();
 }
 
+// Draws menu until scene is quit
 function menuLoop(){
     renderMenu();
     if(menu == true){
@@ -29,13 +32,15 @@ function renderMenu(){
     playButton.render(canvas.width*0.5, canvas.height*0.125);
 }
 
+// touch input detected and checking if touch is over the button 
+// plays sound and transistions the scene
 function playButtonCheck(press){
     if(press.x > playButton.x && press.x < playButton.x + canvas.width*0.5){
         if(press.y > playButton.y && press.y < playButton.y + canvas.height*0.125){
             if(soundMgr != null){
                 soundMgr.playSound(1);
             }
-            playGame();
+            viewInstructions();
             menu = false;
         }
     }

@@ -1,6 +1,7 @@
 var numShapes = 7;
 var rand = Math.floor((Math.random() * numShapes) + 1);
 
+// UI Image to show at top of the screen 
 function nextShapeDisplay(){
     switch(rand){
         case 1:
@@ -34,15 +35,17 @@ function nextShapeDisplay(){
     }
 }
 
+// new shape before returning new array sets rand to 
+//random value to be read by nextShapeDisplay
 function CreateShape(){
     var blocks = [];
     switch(rand){
         case 1:
             // J Shape
-            blocks.push(new image(0, 0,"BlueBlock.jpg", 0, 0));
-            blocks.push(new image(0, 1,"BlueBlock.jpg", 0, 0));
-            blocks.push(new image(1, 1,"BlueBlock.jpg", 0, 0));
-            blocks.push(new image(2, 1,"BlueBlock.jpg", 0, 0));
+            blocks.push(new image(0, 0,"BlueBlock.jpg"));
+            blocks.push(new image(0, 1,"BlueBlock.jpg"));
+            blocks.push(new image(1, 1,"BlueBlock.jpg"));
+            blocks.push(new image(2, 1,"BlueBlock.jpg"));
             break;
         case 2:
             // L Shape
@@ -89,13 +92,14 @@ function CreateShape(){
         }
         rand = Math.floor((Math.random() * numShapes) + 1);
         return blocks;
-    }
+}
 
-function createGhostShape(xPos){
+// return outline blocks
+function createGhostShape(){
     var ghostBlocks = [];
-    ghostBlocks.push(new image(0, 0,"GreyBlock.png", 0, 100));
-    ghostBlocks.push(new image(0, 0,"GreyBlock.png", 0, 100));
-    ghostBlocks.push(new image(0, 0,"GreyBlock.png", 0, 100));
-    ghostBlocks.push(new image(0, 0,"GreyBlock.png", 0, 100));
+    ghostBlocks.push(new image(0, 0,"GreyBlock.png"));
+    ghostBlocks.push(new image(0, 0,"GreyBlock.png"));
+    ghostBlocks.push(new image(0, 0,"GreyBlock.png"));
+    ghostBlocks.push(new image(0, 0,"GreyBlock.png"));
     return ghostBlocks;
 }
