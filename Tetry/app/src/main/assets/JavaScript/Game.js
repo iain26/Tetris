@@ -381,7 +381,7 @@ function placement(){
     if(soundMgr != null){
         soundMgr.playSound(0);
     }
-    createParticles(canvas.width, 0);
+    // createParticles(canvas.width, 0);
 
     createNewShape();
 }
