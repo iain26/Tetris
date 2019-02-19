@@ -9,6 +9,8 @@ var gameState = gameStates.MENU;
 var soundMgr;
 
 var currentTouchPoint = null;
+//bool
+var artAgent = false;
 
 // Run when window loads
 function load() {
@@ -87,6 +89,11 @@ function sceneMgr() {
     requestAnimationFrame(sceneMgr);
 }
 
+function toggleBot(){
+    artAgent = !artAgent;
+    print(artAgent);
+}
+
 // functions called from outside this javascript - purpose to change scene
 function viewInstructions(){
     gameState = gameStates.INSTRUCTION;
@@ -117,27 +124,29 @@ var point;
 function touchUp(evt) {
     evt.preventDefault();
     if(gameState == gameStates.GAME){
-        var elapsed = Date.now() / 1000 - timePressed;
-        var swipeDown = currentTouchPoint.y - firstPress.y >= 100;
+        if(!artAgent){
+            var elapsed = Date.now() / 1000 - timePressed;
+            var swipeDown = currentTouchPoint.y - firstPress.y >= 100;
 
-        // what direction to rotate - decided by what side of screen pressed
-        var clockwise;
-        if(currentTouchPoint.x > canvas.width/3){
-            clockwise = 1;
-        }
-        else{
-            clockwise = -1;
-        }
+            // what direction to rotate - decided by what side of screen pressed
+            var clockwise;
+            if(currentTouchPoint.x > canvas.width/3){
+                clockwise = 1;
+            }
+            else{
+                clockwise = -1;
+            }
 
-        // swipe down fast on screen then speed up falling shape
-        if(swipeDown == true && elapsed < 0.15){
-            hardPlacement = true;
-            timeStep *= 0.1;
-        }
+            // swipe down fast on screen then speed up falling shape
+            if(swipeDown == true && elapsed < 0.15){
+                hardPlacement = true;
+                timeStep *= 0.1;
+            }
 
-        // tapping the screen rotates the current shape
-        if (elapsed < 0.15 && swipeDown == false) {
-            rotateShape(clockwise);
+            // tapping the screen rotates the current shape
+            if (elapsed < 0.15 && swipeDown == false) {
+                rotateShape(clockwise);
+            }
         }
     }
     firstPress = null;
@@ -161,6 +170,7 @@ function touchXY(evt) {
             if(firstPress == null){
                 firstPress = currentTouchPoint;
                 playButtonCheck(firstPress);
+                botButtonCheck(firstPress);
             }
         break;
         case gameStates.INSTRUCTION:
@@ -176,15 +186,17 @@ function touchXY(evt) {
             }
         break;
         case gameStates.GAME:
-            if(firstPress == null){
-                firstPress = currentTouchPoint;
-                point = currentTouchPoint;
-            }
+            if(!artAgent){
+                if(firstPress == null){
+                    firstPress = currentTouchPoint;
+                    point = currentTouchPoint;
+                }
 
-            // holding down longing means that game expects movement input
-            var elapsed = Date.now() / 1000 - timePressed;
-            if (elapsed >= 0.15) {
-                moveShape(currentTouchPoint);
+                // holding down longing means that game expects movement input
+                var elapsed = Date.now() / 1000 - timePressed;
+                if (elapsed >= 0.15) {
+                    moveShape(currentTouchPoint);
+                }
             }
         break;
     }

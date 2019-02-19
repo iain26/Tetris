@@ -51,14 +51,14 @@ var ghostCurrentY = yGridAmount - 1;
 var particleG = 0.05;
 
 // first function to run
-function startGame(){
-    initialiseGame();
+function startGame(artificialAgent){
+    initialiseGame(artificialAgent);
 }
 
 // performs reset of game
 // sets the grid values
 // creates new shape and starts game loop
-function initialiseGame() {
+function initialiseGame(artificialAgent) {
     reset();
     if (canvas.getContext)
     {
@@ -90,7 +90,7 @@ function initialiseGame() {
         styleText('white', '30px Courier New', 'left', 'middle');
 
         createNewShape();
-        gameLoop();
+        gameLoop(artificialAgent);
     }
 }
 
@@ -114,9 +114,12 @@ function timeStepUpdate() {
 }
 
 // loop that holds main mechanics run each animation frame until end condition met
-function gameLoop() {
+function gameLoop(artificialAgent) {
     timeStepUpdate();
     placementCheck();
+    if(artificialAgent){
+        artificialPlay();
+    }
     update();
     ghost();
     checkLine();
@@ -126,6 +129,16 @@ function gameLoop() {
     }
     else{
         stopGame();
+    }
+}
+
+function artificialPlay(){
+    var aimX;
+    var aimY;
+    for (var x = 0; x < xGridAmount; x++) {
+        for (var y = 0; y < yGridAmount; y++) {
+            
+        }
     }
 }
 
@@ -212,7 +225,7 @@ function ghost(){
                 var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
                 if(ghostX == surfaceX[s] && surfaceY[s] == ghostY){
                     ghostCurrentY--;
-                    // seasrch for every imdividual block and surface value again if ghost shape displaced
+                    // search for every individual block and surface value again if ghost shape displaced
                     i = -1;
                     s = -1;
                 }
