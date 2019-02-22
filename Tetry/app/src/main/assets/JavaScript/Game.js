@@ -135,11 +135,26 @@ function gameLoop(artificialAgent) {
 function artificialPlay(){
     var aimX;
     var aimY;
-    for (var x = 0; x < xGridAmount; x++) {
-        for (var y = 0; y < yGridAmount; y++) {
-            
+    var quit = false;
+    for (var y = yGridAmount; y > 0; y--) {
+        for (var x = 0; x < xGridAmount; x++) {
+            print(surfaceBlock[0][26]==null);
+            if(surfaceBlock[x][y] == null){
+                aimX = x;
+                aimY = y;
+                quit = true;
+                break;
+            }
+        }
+        if(quit == true){
+            break;
         }
     }
+    // print(aimX + " " + aimY);
+
+    var move = {x:1, y:0};
+    move.x *= (aimX - currentX);
+    moveShape(move);
 }
 
 // reseting the game to values on first loadup - useful for replaying

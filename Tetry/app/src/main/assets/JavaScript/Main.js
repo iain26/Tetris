@@ -91,7 +91,12 @@ function sceneMgr() {
 
 function toggleBot(){
     artAgent = !artAgent;
-    print(artAgent);
+    if(artAgent){
+        botButton = new image(canvas.width*0.8, canvas.height*0.845, "Bot.jpg", 0, 0);
+    }
+    else{    
+        botButton = new image(canvas.width*0.8, canvas.height*0.845, "Human.jpg", 0, 0);
+    }
 }
 
 // functions called from outside this javascript - purpose to change scene
