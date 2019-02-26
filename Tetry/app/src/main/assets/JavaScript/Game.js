@@ -50,15 +50,18 @@ var ghostCurrentY = yGridAmount - 1;
 
 var particleG = 0.05;
 
+var ai = false;
+
 // first function to run
 function startGame(artificialAgent){
-    initialiseGame(artificialAgent);
+    ai = artificialAgent;
+    initialiseGame();
 }
 
 // performs reset of game
 // sets the grid values
 // creates new shape and starts game loop
-function initialiseGame(artificialAgent) {
+function initialiseGame() {
     reset();
     if (canvas.getContext)
     {
@@ -90,7 +93,7 @@ function initialiseGame(artificialAgent) {
         styleText('white', '30px Courier New', 'left', 'middle');
 
         createNewShape();
-        gameLoop(artificialAgent);
+        gameLoop();
     }
 }
 
@@ -114,11 +117,11 @@ function timeStepUpdate() {
 }
 
 // loop that holds main mechanics run each animation frame until end condition met
-function gameLoop(artificialAgent) {
+function gameLoop() {
     timeStepUpdate();
     placementCheck();
-    if(artificialAgent){
-        artificialPlay();
+    if(ai == true){
+        RunAgent();
     }
     update();
     ghost();
@@ -132,7 +135,7 @@ function gameLoop(artificialAgent) {
     }
 }
 
-function artificialPlay(){
+function RunAgent(){
     var aimX;
     var aimY;
     var quit = false;

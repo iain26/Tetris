@@ -80,7 +80,7 @@ function sceneMgr() {
             startInstruction();
         }
         if(gameState == gameStates.GAME){
-            startGame();
+            startGame(artAgent);
         }
         if(gameState == gameStates.REPLAY){
             startReplay();

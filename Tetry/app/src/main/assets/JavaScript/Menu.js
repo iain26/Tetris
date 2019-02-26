@@ -15,7 +15,7 @@ function initialiseMenu(){
     background = new image(0, 0, "MenuBorder.jpg", 0, 0);
     logo = new image(canvas.width*0.07, canvas.height*0.04, "TetryLOGO.png", 0, 0);
     playButton = new image(canvas.width*0.25, canvas.height*0.55, "PlayButton.jpg", 0, 0);
-    botButton = new image(canvas.width*0.8, canvas.height*0.845, "Bot.jpg", 0, 0);
+    botButton = new image(canvas.width*0.8, canvas.height*0.845, "Human.jpg", 0, 0);
     menuLoop();
 }
 
