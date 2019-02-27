@@ -16,6 +16,7 @@ var hardPlacement = false;
 
 var level = 1;
 var score = 0;
+var points = 0;
 
 var gridCellX = [];
 var gridCellY = [];
@@ -120,11 +121,11 @@ function timeStepUpdate() {
 function gameLoop() {
     timeStepUpdate();
     placementCheck();
-    if(ai == true){
-        RunAgent();
-    }
     update();
     ghost();
+    if(ai == true){
+        runAgent();
+    }
     checkLine();
     renderGame();
     if(playing == true){
@@ -135,28 +136,36 @@ function gameLoop() {
     }
 }
 
-function RunAgent(){
-    var aimX;
-    var aimY;
-    var quit = false;
-    for (var y = yGridAmount; y > 0; y--) {
-        for (var x = 0; x < xGridAmount; x++) {
-            print(surfaceBlock[0][26]==null);
-            if(surfaceBlock[x][y] == null){
-                aimX = x;
-                aimY = y;
-                quit = true;
-                break;
-            }
-        }
-        if(quit == true){
-            break;
-        }
-    }
-    // print(aimX + " " + aimY);
+function checkPossiblePlacements(x){
+    // var tempPoints = points;
+    // for (var i = 0; i < shape.length; i++) {
+    //     if((BlockGridPosX[i] + 1) + x < xGridAmount){
+    //         if(gridCellOccupied[BlockGridPosX[i] + 1][ghostCurrentY] == false){
+    //             evaluateMove("space side");
+    //         }
+    //     }
+    //     if(BlockGridPosX[i] - 1 >= 0){
+    //         if(gridCellOccupied[BlockGridPosX[i] - 1][BlockGridPosY[i]] == false){
+    //             evaluateMove("space side");
+    //         }
+    //     }
+    //     if(BlockGridPosY[i] + 1 >= 0){
+    //         if(gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i] + 1] == false){
+    //             evaluateMove("space below");
+    //         }
+    //     }
+    // }
+    // return temp
+}
 
-    var move = {x:1, y:0};
-    move.x *= (aimX - currentX);
+function runAgent(){
+    var aimX;
+    for (var x = 0; x < xGridAmount; x++) {
+        checkPossiblePlacements(x);
+    }
+    
+    var move = {x:0, y:0};
+    move.x = (((aimX - currentX)) * getGridWidth());
     moveShape(move);
 }
 
@@ -168,7 +177,12 @@ function reset(){
 
     playing = true;
 
-    timeStep = 0.3;
+    if(ai == false){
+        timeStep = 0.3;
+    }
+    else{
+        timeStep = 0.05;
+    }
     previousTime = 0;
     time = 0;
     incrementing = false;
@@ -205,6 +219,8 @@ function reset(){
     particles.length = 0;
 }
 
+var ghostY;
+
 // The outlined object below the shape
 function ghost(){
     var surfaceX = [];
@@ -240,7 +256,7 @@ function ghost(){
         for (var i = 0; i < shape.length; i++) {
             for (var s = 0; s < surfaceX.length; s++) {
                 var ghostX = BlockShapePosX[i] + currentX;
-                var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
+                ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
                 if(ghostX == surfaceX[s] && surfaceY[s] == ghostY){
                     ghostCurrentY--;
                     // search for every individual block and surface value again if ghost shape displaced
@@ -348,7 +364,7 @@ function particleCollision(particle){
                 var b = {x: gridCellX[x], y: gridCellY[y]};
                 var d = distance(a, b);
                 if(d < getGridWidth()*2){
-                    //only run if close enough
+                    // only run if close enough
                     if(!(particle.x > b.x + getGridWidth() || particle.x < b.x)){
                         if(!(particle.y < b.y || particle.y > b.y + getGridHeight())){
                             // if collided change surface colour
@@ -391,7 +407,13 @@ function placementCheck() {
             if (BlockGridPosY[i] <= 2) {
                 // end gameplay
                 print("Game Over");
-                playing = false;
+                evaluateMove("over");
+                if(ai == false){
+                    playing = false;
+                }
+                else{
+                    initialiseGame();
+                }
                 return;
             }
         }
@@ -403,14 +425,28 @@ function placementCheck() {
 
 // create new surface blocks, play sound, generate particles and create new shape 
 function placement(){
+    var groundPlace = false;
+
     for (var i = 0; i < shape.length; i++) {
+
         surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] = 
         new image(shape[i].x, shape[i].y, "GreenBlock.jpg", 0, 0);
 
         gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true; 
+        if (BlockGridPosY[i] == yGridAmount - 1){
+            groundPlace = true;
+        }
     }
+
     if(soundMgr != null){
         soundMgr.playSound(0);
+    }
+
+    if(groundPlace == true){
+        evaluateMove("ground");
+    }
+    else{
+        evaluateMove("stack");
     }
     // createParticles(canvas.width, 0);
 
@@ -489,12 +525,36 @@ function lineDeletion(yStart) {
     }
 }
 
+function evaluateMove(typeOfScoreAdd){
+    switch(typeOfScoreAdd){
+        case "line":
+            score += 1000;
+            points += 1000;
+            break;
+        case "ground":
+            points += 100;
+            break;
+        case "stack":
+            points -= 100;
+            break;
+        case "space side":
+            points -= 25;
+            break;
+        case "space below":
+            points -= 50;
+            break;
+        case "over":
+            points -= 10000;
+            break;
+    }
+}
+
 // level starts at 1, increment level when player deletes 5 lines
 // player gains more score the higher their level, as well as time step decreasing  
 function LevelSystem(){
     level = Math.floor(lineCounter/ 5) + 1;
-    score += 100 * level;
-    originalTimeStep = 0.3 - ((level -1) * 0.05); 
+    originalTimeStep = 0.3 - ((level -1) * 0.05);
+    evaluateMove("line");
 }
 
 // Retrieve play data - Used in Replay.js
