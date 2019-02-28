@@ -98,7 +98,7 @@ function initialiseGame() {
     }
 }
 
-// the float values of width and height of a single grid position 
+// the float values of width and height of a single grid position
 function getGridWidth(){
     return canvas.width/xGridAmount;
 }
@@ -137,36 +137,40 @@ function gameLoop() {
 }
 
 function checkPossiblePlacements(x){
-    // var tempPoints = points;
-    // for (var i = 0; i < shape.length; i++) {
-    //     if((BlockGridPosX[i] + 1) + x < xGridAmount){
-    //         if(gridCellOccupied[BlockGridPosX[i] + 1][ghostCurrentY] == false){
-    //             evaluateMove("space side");
-    //         }
-    //     }
-    //     if(BlockGridPosX[i] - 1 >= 0){
-    //         if(gridCellOccupied[BlockGridPosX[i] - 1][BlockGridPosY[i]] == false){
-    //             evaluateMove("space side");
-    //         }
-    //     }
-    //     if(BlockGridPosY[i] + 1 >= 0){
-    //         if(gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i] + 1] == false){
-    //             evaluateMove("space below");
-    //         }
-    //     }
-    // }
-    // return temp
+    var tempPoints = 0;
+    currentX = x;
+    for (var i = 0; i < shape.length; i++) {
+        if((BlockShapePosX[i]) + x < xGridAmount){
+            // if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
+            // {
+            //     tempPoints+=1000;
+            // }
+        }
+    }
+    return tempPoints;
 }
 
+var newShape = false;
+
 function runAgent(){
-    var aimX;
-    for (var x = 0; x < xGridAmount; x++) {
-        checkPossiblePlacements(x);
+    // if(newShape)
+    {
+        var aimX;
+        var pointX = -100000;
+        for (var x = 0; x < xGridAmount; x++) {
+            var tempPointX = checkPossiblePlacements(x);
+            if(tempPointX > pointX){
+                pointX = tempPointX;
+                aimX = x;
+            }
+        }
+
+        // var move = {x:0, y:0};
+        // move.x = ((aimX) * getGridWidth());
+        // moveShape(move);
+        // currentX = aimX;
+        newShape = false;
     }
-    
-    var move = {x:0, y:0};
-    move.x = (((aimX - currentX)) * getGridWidth());
-    moveShape(move);
 }
 
 // reseting the game to values on first loadup - useful for replaying
@@ -181,7 +185,7 @@ function reset(){
         timeStep = 0.3;
     }
     else{
-        timeStep = 0.05;
+        timeStep = 0.075;
     }
     previousTime = 0;
     time = 0;
@@ -215,11 +219,9 @@ function reset(){
     currentY = 0;
     currentChangeX = 0;
     ghostCurrentY = yGridAmount - 1;
-    
+
     particles.length = 0;
 }
-
-var ghostY;
 
 // The outlined object below the shape
 function ghost(){
@@ -256,7 +258,7 @@ function ghost(){
         for (var i = 0; i < shape.length; i++) {
             for (var s = 0; s < surfaceX.length; s++) {
                 var ghostX = BlockShapePosX[i] + currentX;
-                ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
+                var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
                 if(ghostX == surfaceX[s] && surfaceY[s] == ghostY){
                     ghostCurrentY--;
                     // search for every individual block and surface value again if ghost shape displaced
@@ -354,7 +356,7 @@ function particleCollision(particle){
     }
     // touch sides of screen bounce towards the centre with slightly less amount
     if(particle.x <= 0 + canvas.width*0.005 || particle.x >= canvas.width*0.995){
-        particle.vx *= -0.95; 
+        particle.vx *= -0.95;
     }
     // for every surface block that exists
     for (var x = 0; x < xGridAmount; x++) {
@@ -392,7 +394,7 @@ function changeSurfaceColor(x, y, pColor){
     }
 }
 
-// pythagoras distance between two points 
+// pythagoras distance between two points
 function distance(a, b){
     return Math.sqrt(Math.pow((a.x - b.x), 2) + Math.pow((a.y - b.y), 2));
 }
@@ -401,7 +403,7 @@ function placementCheck() {
     // check that shape has reached ground or the space below is occupied
     var placed = false;
     for (var i = 0; i < shape.length; i++) {
-        if (BlockGridPosY[i] == yGridAmount - 1 
+        if (BlockGridPosY[i] == yGridAmount - 1
             || gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i] + 1] == true) {
             placed = true;
             if (BlockGridPosY[i] <= 2) {
@@ -423,16 +425,16 @@ function placementCheck() {
     }
 }
 
-// create new surface blocks, play sound, generate particles and create new shape 
+// create new surface blocks, play sound, generate particles and create new shape
 function placement(){
     var groundPlace = false;
 
     for (var i = 0; i < shape.length; i++) {
 
-        surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] = 
+        surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] =
         new image(shape[i].x, shape[i].y, "GreenBlock.jpg", 0, 0);
 
-        gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true; 
+        gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true;
         if (BlockGridPosY[i] == yGridAmount - 1){
             groundPlace = true;
         }
@@ -442,12 +444,12 @@ function placement(){
         soundMgr.playSound(0);
     }
 
-    if(groundPlace == true){
-        evaluateMove("ground");
-    }
-    else{
-        evaluateMove("stack");
-    }
+    // if(groundPlace == true){
+    //     evaluateMove("ground");
+    // }
+    // else{
+    //     evaluateMove("stack");
+    // }
     // createParticles(canvas.width, 0);
 
     createNewShape();
@@ -470,6 +472,7 @@ function emptyShapeElements() {
 
 // clear old shape then load a new one from Shape.js
 function createNewShape() {
+    newShape = true;
     emptyShapeElements();
     shape = CreateShape();
     nextShape = nextShapeDisplay();
@@ -477,7 +480,7 @@ function createNewShape() {
     sortShapePos(shape);
 }
 
-// give the individual positonal data relative to other and position on the grid 
+// give the individual positonal data relative to other and position on the grid
 function sortShapePos(newShape) {
     for (var i = 0; i < newShape.length; i++) {
         BlockShapePosX.push(newShape[i].x);
@@ -509,13 +512,13 @@ function checkLine() {
     }
 }
 
-// start from first row to delete up and replace the grid values with ones from 1 grid space up   
+// start from first row to delete up and replace the grid values with ones from 1 grid space up
 function lineDeletion(yStart) {
     for (var yG = yStart; yG > 0; yG--) {
         for (var x = 0; x < xGridAmount; x++) {
             gridCellOccupied[x][yG] = gridCellOccupied[x][yG - 1];
             if (surfaceBlock[x][yG - 1] != null) {
-                surfaceBlock[x][yG] = 
+                surfaceBlock[x][yG] =
                 new image(gridCellX[x], gridCellY[yG], "GreenBlock.jpg", 0, 0);
             }
             else {
@@ -550,7 +553,7 @@ function evaluateMove(typeOfScoreAdd){
 }
 
 // level starts at 1, increment level when player deletes 5 lines
-// player gains more score the higher their level, as well as time step decreasing  
+// player gains more score the higher their level, as well as time step decreasing
 function LevelSystem(){
     level = Math.floor(lineCounter/ 5) + 1;
     originalTimeStep = 0.3 - ((level -1) * 0.05);
@@ -625,13 +628,15 @@ function moveShape(scrollPoint) {
     }
 
     // applying change to x, reseting wallkick value if moved
-    if (left == true) {
-        currentX--;
-        currentChangeX = 0;
-    }
-    if (right == true) {
-        currentX++;
-        currentChangeX = 0;
+    if(ai != false){
+        if (left == true) {
+            currentX--;
+            currentChangeX = 0;
+        }
+        if (right == true) {
+            currentX++;
+            currentChangeX = 0;
+        }
     }
 }
 
@@ -640,7 +645,7 @@ function isRotatable(x, y,tempCurrentX){
     var result = true;
     for(var xI = 0; xI < x.length; xI++){
         if(((y[xI] + currentY)) < (yGridAmount -1)){
-            if(gridCellOccupied[(x[xI] + tempCurrentX)][(y[xI] + currentY)] == true 
+            if(gridCellOccupied[(x[xI] + tempCurrentX)][(y[xI] + currentY)] == true
             && (y[xI] + currentY) < yGridAmount - 1){
                 print("Cannot rotate: shape");
                 result = false;
@@ -709,7 +714,7 @@ function rotateShape(clockwise) {
             checkY[i] += 1;
         }
         else if(height == 4 || length == 4){
-            // setting the position for I shape 
+            // setting the position for I shape
             if(length == 4){
                 checkX[i] = oldY[i];
                 checkY[i] = oldX[i];
@@ -726,7 +731,7 @@ function rotateShape(clockwise) {
         }
     }
 
-    //wall kicks - if shape rotation moves shape out of bounds then displace it back onto grid 
+    //wall kicks - if shape rotation moves shape out of bounds then displace it back onto grid
     if((Math.min(...checkX) + tempCurrentX) < 0){
         while((Math.min(...checkX) + tempCurrentX) < 0){
             tempCurrentX++;
