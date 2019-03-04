@@ -138,13 +138,13 @@ function gameLoop() {
 
 function checkPossiblePlacements(x){
     var tempPoints = 0;
-    currentX = x;
+    // currentX = x;
     for (var i = 0; i < shape.length; i++) {
         if((BlockShapePosX[i]) + x < xGridAmount){
-            // if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
-            // {
-            //     tempPoints+=1000;
-            // }
+            if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
+            {
+                tempPoints+=1000;
+            }
         }
     }
     return tempPoints;
@@ -153,7 +153,7 @@ function checkPossiblePlacements(x){
 var newShape = false;
 
 function runAgent(){
-    // if(newShape)
+    if(newShape)
     {
         var aimX;
         var pointX = -100000;
