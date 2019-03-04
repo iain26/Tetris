@@ -122,10 +122,6 @@ function gameLoop() {
     timeStepUpdate();
     placementCheck();
     update();
-    ghost();
-    if(ai == true){
-        runAgent();
-    }
     checkLine();
     renderGame();
     if(playing == true){
@@ -138,15 +134,25 @@ function gameLoop() {
 
 function checkPossiblePlacements(x){
     var tempPoints = 0;
-    // currentX = x;
+    currentX = x;
+    print(ghostCurrentY)
     for (var i = 0; i < shape.length; i++) {
         if((BlockShapePosX[i]) + x < xGridAmount){
             if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
             {
-                tempPoints+=1000;
+                tempPoints += 1000;
+            }
+            if (ghostCurrentY + BlockShapePosY[i] - lowestY + 1 <= yGridAmount - 1){
+                if(surfaceBlock[(BlockShapePosX[i]) + x][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] != null){
+                    tempPoints -= 100;
+                }
             }
         }
+        else{
+            return "out";
+        }
     }
+    print(tempPoints)
     return tempPoints;
 }
 
@@ -159,16 +165,14 @@ function runAgent(){
         var pointX = -100000;
         for (var x = 0; x < xGridAmount; x++) {
             var tempPointX = checkPossiblePlacements(x);
-            if(tempPointX > pointX){
-                pointX = tempPointX;
-                aimX = x;
+            if(tempPointX != "out"){
+                if(tempPointX > pointX){
+                    pointX = tempPointX;
+                    aimX = x;
+                }
             }
         }
-
-        // var move = {x:0, y:0};
-        // move.x = ((aimX) * getGridWidth());
-        // moveShape(move);
-        // currentX = aimX;
+        currentX = aimX;
         newShape = false;
     }
 }
@@ -346,6 +350,7 @@ function update() {
     lowestY = Math.max(...BlockShapePosY);
     highestY = Math.min(...BlockShapePosY);
 
+    ghost();
 }
 
 function particleCollision(particle){
@@ -491,6 +496,10 @@ function sortShapePos(newShape) {
 
         newShape[i].x = gridCellX[BlockGridPosX[i]];
         newShape[i].y = gridCellY[BlockGridPosY[i]];
+    }
+    
+    if(ai == true){
+        runAgent();
     }
 }
 
