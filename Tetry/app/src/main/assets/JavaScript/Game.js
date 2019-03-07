@@ -6,7 +6,7 @@ var spawnPos = 0;
 var playing = true;
 
 //time in seconds between updates
-var timeStep = 0.3;
+var timeStep;
 var originalTimeStep;
 var previousTime = 0;
 var time = 0;
@@ -16,7 +16,6 @@ var hardPlacement = false;
 
 var level = 1;
 var score = 0;
-var points = 0;
 
 var gridCellX = [];
 var gridCellY = [];
@@ -51,11 +50,9 @@ var ghostCurrentY = yGridAmount - 1;
 
 var particleG = 0.05;
 
-var ai = false;
 
 // first function to run
-function startGame(artificialAgent){
-    ai = artificialAgent;
+function startGame(){
     initialiseGame();
 }
 
@@ -66,6 +63,12 @@ function initialiseGame() {
     reset();
     if (canvas.getContext)
     {
+        if(artAgent == true){
+            timeStep = 0.005;
+        }
+        else{
+            timeStep = 0.3;
+        }
         originalTimeStep = timeStep;
 
         spawnPos = Math.floor(xGridAmount/2) - 2;
@@ -124,56 +127,19 @@ function gameLoop() {
     update();
     checkLine();
     renderGame();
+    if(artAgent == true){
+        genAlgorithm();
+    }
     if(playing == true){
         requestAnimationFrame(gameLoop);
     }
     else{
-        stopGame();
-    }
-}
-
-function checkPossiblePlacements(x){
-    var tempPoints = 0;
-    currentX = x;
-    print(ghostCurrentY)
-    for (var i = 0; i < shape.length; i++) {
-        if((BlockShapePosX[i]) + x < xGridAmount){
-            if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
-            {
-                tempPoints += 1000;
-            }
-            if (ghostCurrentY + BlockShapePosY[i] - lowestY + 1 <= yGridAmount - 1){
-                if(surfaceBlock[(BlockShapePosX[i]) + x][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] != null){
-                    tempPoints -= 100;
-                }
-            }
+        if(artAgent == true){
+            initialiseGame();
         }
         else{
-            return "out";
+            stopGame();
         }
-    }
-    print(tempPoints)
-    return tempPoints;
-}
-
-var newShape = false;
-
-function runAgent(){
-    if(newShape)
-    {
-        var aimX;
-        var pointX = -100000;
-        for (var x = 0; x < xGridAmount; x++) {
-            var tempPointX = checkPossiblePlacements(x);
-            if(tempPointX != "out"){
-                if(tempPointX > pointX){
-                    pointX = tempPointX;
-                    aimX = x;
-                }
-            }
-        }
-        currentX = aimX;
-        newShape = false;
     }
 }
 
@@ -185,11 +151,11 @@ function reset(){
 
     playing = true;
 
-    if(ai == false){
+    if(artAgent == false){
         timeStep = 0.3;
     }
     else{
-        timeStep = 0.075;
+        timeStep = 0.005;
     }
     previousTime = 0;
     time = 0;
@@ -415,17 +381,13 @@ function placementCheck() {
                 // end gameplay
                 print("Game Over");
                 evaluateMove("over");
-                if(ai == false){
-                    playing = false;
-                }
-                else{
-                    initialiseGame();
-                }
+                playing = false;
                 return;
             }
         }
     }
     if (placed == true) {
+        timeStep=0;
         placement();
     }
 }
@@ -475,14 +437,17 @@ function emptyShapeElements() {
     }
 }
 
+var agentNewShape = false;
+
 // clear old shape then load a new one from Shape.js
 function createNewShape() {
-    newShape = true;
+    agentNewShape = true;
     emptyShapeElements();
     shape = CreateShape();
     nextShape = nextShapeDisplay();
     ghostShape = createGhostShape();
     sortShapePos(shape);
+    timeStep = originalTimeStep;
 }
 
 // give the individual positonal data relative to other and position on the grid
@@ -496,10 +461,6 @@ function sortShapePos(newShape) {
 
         newShape[i].x = gridCellX[BlockGridPosX[i]];
         newShape[i].y = gridCellY[BlockGridPosY[i]];
-    }
-    
-    if(ai == true){
-        runAgent();
     }
 }
 
@@ -537,35 +498,14 @@ function lineDeletion(yStart) {
     }
 }
 
-function evaluateMove(typeOfScoreAdd){
-    switch(typeOfScoreAdd){
-        case "line":
-            score += 1000;
-            points += 1000;
-            break;
-        case "ground":
-            points += 100;
-            break;
-        case "stack":
-            points -= 100;
-            break;
-        case "space side":
-            points -= 25;
-            break;
-        case "space below":
-            points -= 50;
-            break;
-        case "over":
-            points -= 10000;
-            break;
-    }
-}
 
 // level starts at 1, increment level when player deletes 5 lines
 // player gains more score the higher their level, as well as time step decreasing
 function LevelSystem(){
     level = Math.floor(lineCounter/ 5) + 1;
-    originalTimeStep = 0.3 - ((level -1) * 0.05);
+    if(artAgent ==false){
+        originalTimeStep = 0.3 - ((level -1) * 0.05);
+    }
     evaluateMove("line");
 }
 
@@ -638,15 +578,13 @@ function moveShape(scrollPoint) {
     }
 
     // applying change to x, reseting wallkick value if moved
-    if(ai != false){
-        if (left == true) {
-            currentX--;
-            currentChangeX = 0;
-        }
-        if (right == true) {
-            currentX++;
-            currentChangeX = 0;
-        }
+    if (left == true) {
+        currentX--;
+        currentChangeX = 0;
+    }
+    if (right == true) {
+        currentX++;
+        currentChangeX = 0;
     }
 }
 
