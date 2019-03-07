@@ -576,6 +576,7 @@ function getLevelValues(){
 
 // call from Main.js - touch events
 function moveShape(scrollPoint) {
+    
     var left = false;
     var right = false;
 
