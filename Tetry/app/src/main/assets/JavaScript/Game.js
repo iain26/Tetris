@@ -42,7 +42,7 @@ var surfaceBlock = [];
 var lineCounter = 0;
 
 var currentX = 0;
-var currentY = 0;
+var currentY = -2;
 
 var currentChangeX = 0;
 
@@ -64,7 +64,7 @@ function initialiseGame() {
     if (canvas.getContext)
     {
         if(artAgent == true){
-            timeStep = 0.005;
+            timeStep = 0.000000000005;
         }
         else{
             timeStep = 0.3;
@@ -186,7 +186,7 @@ function reset(){
     surfaceBlock.length = 0;
 
     currentX = 0;
-    currentY = 0;
+    currentY = -2;
     currentChangeX = 0;
     ghostCurrentY = yGridAmount - 1;
 
@@ -246,7 +246,9 @@ function renderGame() {
     backgroundImage.render(canvas.width, canvas.height);
     // render each block seperately
     for (var i = 0; i < shape.length; i++) {
-        ghostShape[i].render(getGridWidth(), getGridHeight());
+        if(artAgent == false){
+            ghostShape[i].render(getGridWidth(), getGridHeight());
+        }
         shape[i].render(getGridWidth(), getGridHeight());
     }
     // render every surface block
@@ -423,7 +425,7 @@ function placement(){
 }
 
 function emptyShapeElements() {
-    currentY = 0;
+    currentY = -2;
     currentX = spawnPos;
     shape.length = 0;
     ghostShape.length = 0;

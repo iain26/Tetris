@@ -2,9 +2,9 @@ var desired = {left: -1, right: 1, NA: 0};
 var newDir;
 var aimX;
 var completeRun = false;
+var attributes = {GAPS: 0, DELETE: 0, HEIGHT: 0, BUMP: 0};
 
 function genAlgorithm() {
-    currentY = 0;
     if(agentNewShape == true){
         completeRun = false;
     }
@@ -20,9 +20,10 @@ function genAlgorithm() {
             completeRun = true;
         }
         aimX = target();
+        currentY = 0;
     }
     if(completeRun == true){
-        points = {xPos: 0, p: 0};
+        points = {xPos: 0, h: 0};
         if(currentX > aimX){
             newDir = desired.left;
         }
@@ -43,63 +44,77 @@ function conInput(dir){
     moveShape(move);
 }
 
-var points = {xPos: 0, p: 0};
+var points = {xPos: 0, h: 0};
 
 function target(){
-    var tempPoints = 0;
-    
+    var temp = {GAPS: 0, DELETE: 0, HEIGHT: 0, BUMP: 0};
+
     for (var i = 0; i < shape.length; i++) {
-        if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
-        {
-            tempPoints += 100;
-        }
+        // if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
+        // {
+        //     h += 1;
+        // }
         if(surfaceBlock[(BlockGridPosX[i])][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] == null){
-            tempPoints -= 50;
+            temp.GAPS -= 0.1;
         }
+
+        var right = (BlockGridPosX[i]) + 1;
+        var left = (BlockGridPosX[i]) - 1;
+
+        if(right < xGridAmount){
+            if(surfaceBlock[right][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
+                temp.GAPS -= 0.1;
+            }
+        }
+        if(left >= 0){
+            if(surfaceBlock[left][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
+                temp.GAPS -= 0.1;
+            }
+        }
+    }
+    
+    for(var y = yGridAmount - 1; y >= 0; y--){
         var lineAmount = 0;
-        for(i = 0; i < xGridAmount; i++){
-            if(surfaceBlock[i][ghostCurrentY + BlockShapePosY[i] - lowestY]){
+        for(x = 0; x < xGridAmount; x++){
+            if(surfaceBlock[x][y] != null){
                 lineAmount ++;
             }
         }
-        tempPoints *= (lineAmount + 1);
-        // if((BlockGridPosX[i] + 1) < xGridAmount){
-        //     if(surfaceBlock[(BlockGridPosX[i] + 1)][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
-        //         tempPoints -= 50;
-        //     }
-        //     else{
-        //         print("sideLeft");
-        //     }
-        // }
-        // if((BlockGridPosX[i] - 1) >= 0){
-        //     if(surfaceBlock[(BlockGridPosX[i] - 1)][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
-        //         tempPoints -= 50;
-        //     }
-        // }
+        if(lineAmount == xGridAmount){
+            temp.DELETE ++;
+        }
     }
 
-    if(tempPoints > points.p){
-        points = {xPos: currentX, p: tempPoints};
+    var columnHeight = [];
+
+    for(var x = 0; x < xGridAmount; x++){
+        var height = 0;
+        for(var y = yGridAmount - 1; y >= 0; y--){
+            if(surfaceBlock[x][y] != null){
+                height++;
+            }
+        }
+        columnHeight.push(height);
+    }
+    const aggregate = (a, c) => a + c;
+    temp.HEIGHT = (columnHeight.reduce(aggregate)) * -0.1;
+
+    var bump = 0;
+    for(var i = 0; i < columnHeight.length; i++){
+        if(i < columnHeight.length -1 ){
+            bump += Math.abs(columnHeight[i+1] - columnHeight[i]); 
+        }
+    }
+    bump *= -0.1;
+    temp.BUMP = bump
+
+    var h = temp.GAPS + temp.DELETE + temp.HEIGHT + temp.BUMP;
+    print(h)
+
+    if(h > points.h){
+        points = {xPos: currentX, h: h};
     }
     return points.xPos;
-
-    for (var i = 0; i < shape.length; i++) {
-        if((BlockShapePosX[i]) + x < xGridAmount){
-            if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
-            {
-                tempPoints += 1000;
-            }
-            if (ghostCurrentY + BlockShapePosY[i] - lowestY + 1 <= yGridAmount - 1){
-                if(surfaceBlock[(BlockShapePosX[i]) + x][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] != null){
-                    tempPoints -= 100;
-                }
-            }
-        }
-        else{
-            return "out";
-        }
-    }
-    return 0;
 }
 
 
@@ -125,45 +140,4 @@ function evaluateMove(typeOfScoreAdd){
             points -= 10000;
             break;
     }
-}
-
-function checkPossiblePlacements(x){
-    var tempPoints = 0;
-    for (var i = 0; i < shape.length; i++) {
-        if((BlockShapePosX[i]) + x < xGridAmount){
-            if (ghostCurrentY + BlockShapePosY[i] - lowestY == yGridAmount - 1)
-            {
-                tempPoints += 1000;
-            }
-            if (ghostCurrentY + BlockShapePosY[i] - lowestY + 1 <= yGridAmount - 1){
-                if(surfaceBlock[(BlockShapePosX[i]) + x][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] != null){
-                    tempPoints -= 100;
-                }
-            }
-        }
-        else{
-            return "out";
-        }
-    }
-    return tempPoints;
-}
-
-function runAgent(){
-    if(agentNewShape)
-    {
-        var aimX;
-        var pointX = -100000;
-        for (var x = 0; x < xGridAmount; x++) {
-            var tempPointX = checkPossiblePlacements(x);
-            if(tempPointX != "out"){
-                if(tempPointX > pointX){
-                    pointX = tempPointX;
-                    aimX = x;
-                }
-            }
-        }
-        currentX = aimX;
-        agentNewShape = false;
-    }
-
 }
