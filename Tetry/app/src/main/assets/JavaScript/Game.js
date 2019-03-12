@@ -413,12 +413,12 @@ function placement(){
         soundMgr.playSound(0);
     }
 
-    // if(groundPlace == true){
-    //     evaluateMove("ground");
-    // }
-    // else{
-    //     evaluateMove("stack");
-    // }
+    if(groundPlace == true){
+        evaluateMove("ground");
+    }
+    else{
+        evaluateMove("stack");
+    }
     // createParticles(canvas.width, 0);
 
     createNewShape();
@@ -478,6 +478,7 @@ function checkLine() {
         }
         if (rowCheck.length == xGridAmount) {
             lineDeletion(y);
+            evaluateMove("line");
             lineCounter++;
             LevelSystem();
         }
