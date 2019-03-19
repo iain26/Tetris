@@ -246,7 +246,8 @@ function renderGame() {
     backgroundImage.render(canvas.width, canvas.height);
     // render each block seperately
     for (var i = 0; i < shape.length; i++) {
-        if(artAgent == false){
+        // if(artAgent == false)
+        {
             ghostShape[i].render(getGridWidth(), getGridHeight());
         }
         shape[i].render(getGridWidth(), getGridHeight());
