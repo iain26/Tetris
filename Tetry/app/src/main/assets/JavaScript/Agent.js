@@ -8,7 +8,7 @@ var att = {GAPS: -1, DELETE: 1, HEIGHT: -1, BUMP: -1};
 // var agent;
 
 
-function genAlgorithm() {
+function renAlgo() {
 //    env.getNumStates = function (){ return xGridAmount * yGridAmount;};
 //    env.getMaxNumActions = function (){ return 2;};
    
@@ -36,7 +36,8 @@ function genAlgorithm() {
             completeRun = true;
         }
         currentY = -2;
-        aimX = reward();
+        // aimX = reward();
+        var ehhh = reward();
     }
     if(completeRun == true){
         if(currentX > aimX){
@@ -68,34 +69,38 @@ function utility(){
 
 function reward(){
     var temp = {GAPS: 0, DELETE: 0, HEIGHT: 0, BUMP: 0};
-    var ghostArr = [];
-    var ghostPos = {x: null, y: null};
+
+    // ghost points
+    var ghostPosX = [];
+    var ghostPosY = [];
     for (var i = 0; i < shape.length; i++) {
-        ghostPos = {x: BlockGridPosX[i],
-            y: ghostCurrentY + BlockShapePosY[i] - lowestY};
-        ghostArr.push(ghostPos);
+        ghostPosX.push(BlockGridPosX[i]);
+        ghostPosY.push(ghostCurrentY + BlockShapePosY[i] - lowestY);
     }
+    // print("X: " + ghostPosX + " , Y: " + ghostPosY);
 
     // Gaps
     for (var i = 0; i < shape.length; i++) {
-        print(ghostArr.includes((BlockGridPosX[i]), ghostCurrentY + BlockShapePosY[i] - lowestY + 1))
-        if(ghostArr.includes((BlockGridPosX[i]), ghostCurrentY + BlockShapePosY[i] - lowestY + 1)){
-            print("below");
-        }
-        if(ghostCurrentY + BlockShapePosY[i] - lowestY != yGridAmount -1){
-            if(surfaceBlock[(BlockGridPosX[i])][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] == null){
-                temp.GAPS -= 0.2;
-            }
-        }
 
         var right = (BlockGridPosX[i]) + 1;
         var left = (BlockGridPosX[i]) - 1;
+
+        if(ghostCurrentY + BlockShapePosY[i] - lowestY != yGridAmount -1){
+            // if()
+            {
+                if(surfaceBlock[(BlockGridPosX[i])][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] == null){
+                    print(" Gap Below " + i);
+                    temp.GAPS -= 0.2;
+                }
+            }
+        }
 
         // if(right < xGridAmount){
         //     if(surfaceBlock[right][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
         //         temp.GAPS -= 0.1;
         //     }
         // }
+
         // if(left >= 0){
         //     if(surfaceBlock[left][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
         //         temp.GAPS -= 0.1;

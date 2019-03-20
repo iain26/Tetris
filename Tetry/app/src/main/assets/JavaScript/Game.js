@@ -127,9 +127,6 @@ function gameLoop() {
     update();
     checkLine();
     renderGame();
-    if(artAgent == true){
-        genAlgorithm();
-    }
     if(playing == true){
         requestAnimationFrame(gameLoop);
     }
@@ -237,6 +234,9 @@ function ghost(){
                 }
             }
         }
+    }
+    if(artAgent == true){
+        renAlgo();
     }
 }
 
