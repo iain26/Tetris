@@ -1,8 +1,7 @@
 var numShapes = 7;
-//uncomment down at next shape as well
 // var rand = Math.floor((Math.random() * numShapes) + 1);
-//delete line below after testing
-var rand = 4;
+var rand = 1;
+var shapeIndex = rand - 1;
 
 // UI Image to show at top of the screen 
 function nextShapeDisplay(){
@@ -41,6 +40,7 @@ function nextShapeDisplay(){
 // new shape before returning new array sets rand to 
 //random value to be read by nextShapeDisplay
 function CreateShape(){
+    shapeIndex = rand - 1;
     var blocks = [];
     switch(rand){
         case 1:
@@ -94,6 +94,10 @@ function CreateShape(){
             break;
         }
         // rand = Math.floor((Math.random() * numShapes) + 1);
+        rand ++;
+        if(rand > 7){
+            rand = 1;
+        }
         return blocks;
 }
 

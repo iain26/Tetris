@@ -61,10 +61,15 @@ function startGame(){
 // creates new shape and starts game loop
 function initialiseGame() {
     reset();
+
+    if(artAgent){
+        setAgentValues();
+    }
+    
     if (canvas.getContext)
     {
         if(artAgent == true){
-            timeStep = 0.000000000005;
+            timeStep = 0.000000000000000005;
         }
         else{
             timeStep = 0.3;
@@ -94,7 +99,7 @@ function initialiseGame() {
 
         backgroundImage = new image(0, 0, "grey-background.jpg", 0, 0);
         headerImage = new image(0, 0, "Header.png", 0, 0);
-        styleText('white', '30px Courier New', 'left', 'middle');
+        styleText('white', '40px Courier New', 'left', 'middle');
 
         createNewShape();
         gameLoop();
@@ -122,11 +127,12 @@ function timeStepUpdate() {
 
 // loop that holds main mechanics run each animation frame until end condition met
 function gameLoop() {
-    renderGame();
     timeStepUpdate();
     placementCheck();
     checkLine();
     update();
+    ghost();
+    renderGame();
     if(playing == true){
         requestAnimationFrame(gameLoop);
     }
@@ -190,53 +196,64 @@ function reset(){
     particles.length = 0;
 }
 
+var runGhost = true;
 // The outlined object below the shape
 function ghost(){
-    var surfaceX = [];
-    var surfaceY = [];
+    if(runGhost == true){
+        runGhost = false;
+        var surfaceX = [];
+        var surfaceY = [];
 
-    // searches every surface block below the shape
-    for (var x = (lowestX + currentX); x <= (highestX + currentX); x++) {
-        for (var y = (highestY + currentY); y < yGridAmount; y++) {
-            if(surfaceBlock[x][y] != null ){
-                surfaceX.push(x);
-                surfaceY.push(y);
-            }
-        }
-    }
+        var updateAgent = false;
 
-    // sets ghost shapes y position equal to the lowest point
-    if(surfaceY.length == 0){
-        ghostCurrentY = yGridAmount - 1;
-    }
-    else{
-        ghostCurrentY = Math.min(...surfaceY);
-        // an offset to apply to L and J shape when vertical as the shape seemingly floats otherwise
-        var counter = 0;
-        for (var i = 0; i < shape.length; i++) {
-            if(BlockShapePosY[i] == 0 && lowestY - highestY > 1){
-                counter++;
-            }
-        }
-        if(counter == 2 && ghostCurrentY != yGridAmount - 1){
-            ghostCurrentY++;
-        }
-        // if ghost shape inside a surface block displace up
-        for (var i = 0; i < shape.length; i++) {
-            for (var s = 0; s < surfaceX.length; s++) {
-                var ghostX = BlockShapePosX[i] + currentX;
-                var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
-                if(ghostX == surfaceX[s] && surfaceY[s] == ghostY){
-                    ghostCurrentY--;
-                    // search for every individual block and surface value again if ghost shape displaced
-                    i = -1;
-                    s = -1;
+        // searches every surface block below the shape
+        for (var x = (lowestX + currentX); x <= (highestX + currentX); x++) {
+            for (var y = (highestY + currentY); y < yGridAmount; y++) {
+                if(surfaceBlock[x][y] != null ){
+                    surfaceX.push(x);
+                    surfaceY.push(y);
                 }
             }
         }
-    }
-    if(artAgent == true){
-        renAlgo();
+
+        // sets ghost shapes y position equal to the lowest point
+        if(surfaceY.length == 0){
+            ghostCurrentY = yGridAmount - 1;
+            updateAgent = true;
+        }
+        else{
+            updateAgent = false;
+            ghostCurrentY = Math.min(...surfaceY);
+            // an offset to apply to L and J shape when vertical as the shape seemingly floats otherwise
+            var counter = 0;
+            for (var i = 0; i < shape.length; i++) {
+                if(BlockShapePosY[i] == 0 && lowestY - highestY > 1){
+                    counter++;
+                }
+            }
+            if(counter == 2 && ghostCurrentY != yGridAmount - 1){
+                ghostCurrentY++;
+            }
+            // if ghost shape inside a surface block displace up
+            for (var i = 0; i < shape.length; i++) {
+                for (var s = 0; s < surfaceX.length; s++) {
+                    var ghostX = BlockShapePosX[i] + currentX;
+                    var ghostY = ghostCurrentY + BlockShapePosY[i]- lowestY;
+                    if(ghostX == surfaceX[s] && surfaceY[s] == ghostY){
+                        ghostCurrentY--;
+                        // search for every individual block and surface value again if ghost shape displaced
+                        i = -1;
+                        s = -1;
+                    }
+                }
+            }
+            updateAgent = true;
+        }
+        
+        if(artAgent == true && updateAgent == true){
+            agentAlgorithm(updateAgent);
+        }
+        runGhost = true;
     }
 }
 
@@ -274,8 +291,13 @@ function renderGame() {
     nextShape.y = getGridHeight()/6;
     nextShape.render(canvas.width*0.33, getGridHeight()*1.65);
 
-    canvasContext.fillText("Score: " + score, canvas.width * 0.05, getGridHeight()*0.5);
-    canvasContext.fillText("Level: " + level, canvas.width * 0.05, getGridHeight()*1.5);
+    canvasContext.fillText("Lines: " + score, canvas.width * 0.05, getGridHeight()*0.5);
+    if(artAgent == false){
+        canvasContext.fillText("Level: " + level, canvas.width * 0.05, getGridHeight()*1.5);
+    }
+    else{
+        canvasContext.fillText("Iteration: " + iter, canvas.width * 0.05, getGridHeight()*1.5);
+    }
 }
 
 function update() {
@@ -318,8 +340,6 @@ function update() {
 
     lowestY = Math.max(...BlockShapePosY);
     highestY = Math.min(...BlockShapePosY);
-
-    ghost();
 }
 
 function particleCollision(particle){
@@ -383,7 +403,9 @@ function placementCheck() {
             if (BlockGridPosY[i] <= 2) {
                 // end gameplay
                 print("Game Over");
-                evaluateMove("over");
+                if(artAgent){
+                    utility();
+                }
                 playing = false;
                 return;
             }
@@ -397,30 +419,23 @@ function placementCheck() {
 
 // create new surface blocks, play sound, generate particles and create new shape
 function placement(){
-    var groundPlace = false;
-
     for (var i = 0; i < shape.length; i++) {
-
         surfaceBlock[BlockGridPosX[i]][BlockGridPosY[i]] =
         new image(shape[i].x, shape[i].y, "GreenBlock.jpg", 0, 0);
 
         gridCellOccupied[BlockGridPosX[i]][BlockGridPosY[i]] = true;
-        if (BlockGridPosY[i] == yGridAmount - 1){
-            groundPlace = true;
-        }
     }
 
+    evaluation();
+
+     
     if(soundMgr != null){
         soundMgr.playSound(0);
     }
 
-    if(groundPlace == true){
-        evaluateMove("ground");
+    if(artAgent == false){
+        createParticles(canvas.width, 0);
     }
-    else{
-        evaluateMove("stack");
-    }
-    // createParticles(canvas.width, 0);
 
     createNewShape();
 }
@@ -479,15 +494,19 @@ function checkLine() {
         }
         if (rowCheck.length == xGridAmount) {
             lineDeletion(y);
-            evaluateMove("line");
             lineCounter++;
-            LevelSystem();
+            if(artAgent == false){
+                LevelSystem();
+            }
         }
     }
 }
 
 // start from first row to delete up and replace the grid values with ones from 1 grid space up
 function lineDeletion(yStart) {
+    
+    addToPoints("line cleared", null);
+
     for (var yG = yStart; yG > 0; yG--) {
         for (var x = 0; x < xGridAmount; x++) {
             gridCellOccupied[x][yG] = gridCellOccupied[x][yG - 1];
@@ -507,10 +526,7 @@ function lineDeletion(yStart) {
 // player gains more score the higher their level, as well as time step decreasing
 function LevelSystem(){
     level = Math.floor(lineCounter/ 5) + 1;
-    if(artAgent ==false){
-        originalTimeStep = 0.3 - ((level -1) * 0.05);
-    }
-    evaluateMove("line");
+    originalTimeStep = 0.3 - ((level -1) * 0.05);
 }
 
 // Retrieve play data - Used in Replay.js

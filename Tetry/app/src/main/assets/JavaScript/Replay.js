@@ -13,7 +13,7 @@ function initialiseReplay(){
     replayBackground = new image(0, 0, "Menu.jpg", 0, 0);
     replayButton = new image(canvas.width*0.25, canvas.height*0.55, "ReplayButton.jpg", 0, 0);
     replayLoop();
-    styleText('red', '25px Courier New', 'left', 'middle');
+    styleText('red', '40px Courier New', 'left', 'middle');
     if(soundMgr != null){
         soundMgr.playMusic(1);
     }
