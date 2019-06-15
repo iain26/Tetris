@@ -4,6 +4,8 @@ var aimX;
 var completeRun = false;
 var att = {GAPS: -1, DELETE: 1, HEIGHT: -1, BUMP: -1};
 
+var tempSurface = [];
+
 // var env = {};
 // var agent;
 
@@ -20,11 +22,29 @@ function renAlgo() {
     //     // execute action in environment and get the reward
     //     agent.learn(reward); // the agent improves its Q,policy,model, etc. reward is a float
     // }, 0);
-   
+
+
     if(agentNewShape == true){
         completeRun = false;
     }
     if(completeRun == false){
+
+        tempSurface.length = 0;
+        for (var x = 0; x < xGridAmount; x++) {
+            tempSurface[x] = new Array(yGridAmount);
+            for (var y = 0; y < yGridAmount; y++) {
+                if(surfaceBlock[x][y] != null){
+                    tempSurface[x][y] = true;
+                }
+                else {
+                    tempSurface[x][y] = false;
+                }
+            }
+        }
+        for (var i = 0; i < shape.length; i++) {
+            tempSurface[BlockShapePosX[i]][ghostCurrentY + BlockShapePosY[i] - lowestY] = true;
+        }
+
         if(agentNewShape == true){
             agentNewShape = false;
             newDir = desired.left;
@@ -37,7 +57,8 @@ function renAlgo() {
         }
         currentY = -2;
         // aimX = reward();
-        var ehhh = reward();
+        aimX = 5;
+        // var ehhh = reward();
     }
     if(completeRun == true){
         if(currentX > aimX){
@@ -49,6 +70,7 @@ function renAlgo() {
         else if(currentX == aimX){
             newDir = desired.NA;
             aimX = null;
+            print(tempSurface);
         }
     }
     conInput(newDir);
@@ -67,33 +89,38 @@ function utility(){
 
 }
 
+function lowYCheck(arr){
+    for(var i =0; i < arr.length; i++){
+        
+    }
+}
+
 function reward(){
     var temp = {GAPS: 0, DELETE: 0, HEIGHT: 0, BUMP: 0};
 
     // ghost points
-    var ghostPosX = [];
-    var ghostPosY = [];
+    var ghostPos = [{x: null, y: null}];
     for (var i = 0; i < shape.length; i++) {
-        ghostPosX.push(BlockGridPosX[i]);
-        ghostPosY.push(ghostCurrentY + BlockShapePosY[i] - lowestY);
+        var tempPos = {x: BlockShapePosX[i], y: ghostCurrentY + BlockShapePosY[i] - lowestY};
+        ghostPos.push(tempPos);
     }
-    // print("X: " + ghostPosX + " , Y: " + ghostPosY);
+    // print(ghostPos);
 
     // Gaps
     for (var i = 0; i < shape.length; i++) {
 
-        var right = (BlockGridPosX[i]) + 1;
-        var left = (BlockGridPosX[i]) - 1;
+        // var right = (BlockGridPosX[i]) + 1;
+        // var left = (BlockGridPosX[i]) - 1;
 
-        if(ghostCurrentY + BlockShapePosY[i] - lowestY != yGridAmount -1){
-            // if()
-            {
-                if(surfaceBlock[(BlockGridPosX[i])][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] == null){
-                    print(" Gap Below " + i);
-                    temp.GAPS -= 0.2;
-                }
-            }
-        }
+        // if(ghostCurrentY + BlockShapePosY[i] - lowestY != yGridAmount -1){
+        //     // if()
+        //     {
+        //         if(surfaceBlock[(BlockGridPosX[i])][ghostCurrentY + BlockShapePosY[i] - lowestY + 1] == null){
+        //             print(" Gap Below " + i);
+        //             temp.GAPS -= 0.2;
+        //         }
+        //     }
+        // }
 
         // if(right < xGridAmount){
         //     if(surfaceBlock[right][ghostCurrentY + BlockShapePosY[i] - lowestY] == null){
@@ -122,22 +149,25 @@ function reward(){
     // }
 
     // // aggregate height
-    // var columnHeight = [];
+    var columnHeight = [];
 
-    // for(var x = 0; x < xGridAmount; x++){
-    //     var height = 0;
-    //     for(var y = yGridAmount - 1; y >= 0; y--){
-    //         if(surfaceBlock[x][y] != null){
-    //             height = yGridAmount - y;
-    //         }
-    //     }
-    //     columnHeight.push(height);
-    // }
-    // const aggregate = (a, c) => a + c;
-    // temp.HEIGHT = (columnHeight.reduce(aggregate));
+    for(var x = 0; x < xGridAmount; x++){
+        var height = 0;
+        for(var y = yGridAmount - 1; y >= 0; y--){
+            if(tempSurface[x][y] != false ){
+                height = yGridAmount - y;
+            }
+        }
+        columnHeight.push(height);
+    }
+    const aggregate = (a, c) => a + c;
+    temp.HEIGHT = (columnHeight.reduce(aggregate));
 
-    // // bump
+    // print(temp.HEIGHT)
+
+    // bump
     // var bump = 0;
+
     // for(var i = 0; i < columnHeight.length; i++){
     //     if(i < columnHeight.length -1 ){
     //         bump += Math.abs(columnHeight[i+1] - columnHeight[i]); 

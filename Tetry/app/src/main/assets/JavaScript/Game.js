@@ -122,11 +122,11 @@ function timeStepUpdate() {
 
 // loop that holds main mechanics run each animation frame until end condition met
 function gameLoop() {
+    renderGame();
     timeStepUpdate();
     placementCheck();
-    update();
     checkLine();
-    renderGame();
+    update();
     if(playing == true){
         requestAnimationFrame(gameLoop);
     }

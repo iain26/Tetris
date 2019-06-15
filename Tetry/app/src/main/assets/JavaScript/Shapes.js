@@ -1,5 +1,8 @@
 var numShapes = 7;
-var rand = Math.floor((Math.random() * numShapes) + 1);
+//uncomment down at next shape as well
+// var rand = Math.floor((Math.random() * numShapes) + 1);
+//delete line below after testing
+var rand = 4;
 
 // UI Image to show at top of the screen 
 function nextShapeDisplay(){
@@ -90,7 +93,7 @@ function CreateShape(){
             blocks.push(new image(2, 1,"MagentaBlock.jpg", 0, 0));
             break;
         }
-        rand = Math.floor((Math.random() * numShapes) + 1);
+        // rand = Math.floor((Math.random() * numShapes) + 1);
         return blocks;
 }
 
